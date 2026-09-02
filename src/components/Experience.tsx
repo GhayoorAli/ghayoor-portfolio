@@ -7,7 +7,7 @@ export function Experience() {
       <div className="container">
         <Reveal className="section-intro">
           <p className="section-kicker">Experience</p>
-          <h2 className="section-title">Places the craft was sharpened.</h2>
+          <h2 className="section-title">Years spent solving real problems.</h2>
         </Reveal>
 
         <ol className="timeline">

@@ -2,15 +2,15 @@ export const site = {
   name: 'Muhammad Ghayoor Ali',
   greeting: "Hello, I'm",
   title: "I'm a Full Stack Developer",
-  email: 'hello@ghayoor.dev',
+  email: 'ghayoorali59@gmail.com',
   location: 'Available worldwide',
   socials: {
-    github: 'https://github.com/',
-    linkedin: 'https://linkedin.com/',
+    github: 'https://github.com/GhayoorAli',
+    linkedin: 'https://www.linkedin.com/in/ghayoorali/',
   },
   stats: [
-    { value: '3+', label: 'Years of Experience' },
-    { value: '7+', label: 'Completed Projects' },
+    { value: '4+', label: 'Years of Experience' },
+    { value: '15+', label: 'Completed Projects' },
     { value: '10K+', label: 'Hours Worked' },
   ],
 }
@@ -20,7 +20,7 @@ export const about = {
   heading: 'I turn ideas into products — schema to screen, backend to browser.',
   body: [
     "I'm Muhammad Ghayoor Ali, a full-stack developer who's shipped 12+ production applications from first commit to real users. I don't just write code — I design the systems underneath it: clean database schemas, APIs that make sense, and interfaces people actually enjoy using.",
-    "My core lives in PHP, Laravel, and MySQL on the server — architecting backend logic, optimizing queries, integrating third-party services — paired with React and Next.js on the client to turn that logic into fast, considered interfaces. I've cut application load times by up to 50% through backend and query optimization, and I take responsibility for my code well beyond deployment — not just the demo.",
+    "My core lives in PHP, Laravel, Magento 2, WordPress and MySQL on the server — architecting backend logic, optimizing queries, integrating third-party services — paired with React (Next.js or Vue.js) on the client to turn that logic into fast, considered interfaces. I've cut application load times by up to 50% through backend and query optimization, and I take responsibility for my code well beyond deployment — not just the demo.",
   ],
 }
 
@@ -195,30 +195,112 @@ export const projects = [
   },
 ]
 
+export const education = [
+  {
+    school: 'Frankfurt University of Applied Sciences',
+    degree: "Master's degree, High Integrity Systems",
+    period: 'Oct 2024 — Present',
+    place: 'Frankfurt am Main, Germany',
+  },
+  {
+    school: 'Government College University, Faisalabad',
+    degree: 'Bachelor of Science — BS, Information Technology',
+    period: 'Oct 2017 — Sep 2021',
+    place: 'Faisalabad, Pakistan',
+  },
+]
+
+export const certifications = [
+  {
+    title: 'Introduction to Web Development',
+    issuer: 'University of California, Davis',
+    platform: 'Coursera',
+    date: 'Apr 2023',
+    image: '/certificates/uc-davis-web-development.png',
+    url: 'https://coursera.org/verify/H7WEBXFXDC2X',
+  },
+  {
+    title: 'Object-Oriented Programming Concepts',
+    issuer: 'LearnQuest',
+    platform: 'Coursera',
+    date: 'Apr 2023',
+    image: '/certificates/learnquest-oop.png',
+    url: 'https://coursera.org/verify/C8EQ87CQQV42',
+  },
+  {
+    title: 'Developing Back-End Apps with Node.js and Express',
+    issuer: 'IBM',
+    platform: 'Coursera',
+    date: 'Apr 2023',
+    image: '/certificates/ibm-nodejs-express.png',
+    url: 'https://coursera.org/verify/UWH647KZXHQA',
+  },
+  {
+    title: 'Introduction to Git and GitHub',
+    issuer: 'Google',
+    platform: 'Coursera',
+    date: 'Apr 2023',
+    image: '/certificates/google-git-github.png',
+    url: 'https://coursera.org/verify/WLN2PXFBJLSY',
+  },
+  {
+    title: 'Software development for enterprise systems',
+    issuer: 'The Open University',
+    platform: 'OpenLearn',
+    date: 'Mar 2023',
+    note: '8-hour course',
+    image: '/certificates/openlearn-enterprise-systems.png',
+    url: null,
+  },
+  {
+    title: 'The database development life cycle',
+    issuer: 'The Open University',
+    platform: 'OpenLearn',
+    date: 'Mar 2023',
+    note: '12-hour course',
+    image: '/certificates/openlearn-database-lifecycle.png',
+    url: null,
+  },
+  {
+    title: 'Web Development with PHP',
+    issuer: 'Aptech Computer Education',
+    platform: 'Certificate of Participation',
+    date: 'Dec 2018',
+    note: 'ACE Punjab — Faisalabad',
+    image: '/certificates/aptech-php.jpg',
+    url: null,
+  },
+]
+
 export const workflow = [
   {
     step: '01',
-    title: 'Discover',
-    text: 'Start with the problem, the users, and the constraints. I ask what success looks like before I open an editor.',
+    title: 'Discovery & Requirements',
+    text: "Understand the client's goals, users, and constraints before writing a line of code.",
   },
   {
     step: '02',
-    title: 'Architect',
-    text: 'Map the data, the APIs, and the moving parts. A clear model now saves months of rework later.',
+    title: 'Planning & Architecture',
+    text: 'Break the project into milestones/sprints, define tech stack, design database schema and API structure.',
   },
   {
     step: '03',
-    title: 'Build',
-    text: 'Ship in thin slices — backend and UI together — so something real can be clicked, tested, and improved.',
+    title: 'Agile Development (2-week sprints)',
+    text: 'Iterative builds with regular check-ins — you deliver working increments, not a single big reveal at the end.',
   },
   {
     step: '04',
-    title: 'Harden',
-    text: 'Tests, auth, performance, and edge cases. Production is not a surprise if you treat it as the default.',
+    title: 'Testing & QA',
+    text: 'Unit/integration tests, code review, bug fixes before anything ships.',
   },
   {
     step: '05',
-    title: 'Ship',
-    text: 'Deploy, observe, iterate. Launch is a checkpoint, not a finish line.',
+    title: 'Deployment & CI/CD',
+    text: 'Staged rollout (staging → production), automated pipelines.',
+  },
+  {
+    step: '06',
+    title: 'Post-Launch Support',
+    text: 'Monitoring, maintenance, iteration based on real usage.',
   },
 ]

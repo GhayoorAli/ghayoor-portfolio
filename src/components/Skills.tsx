@@ -8,7 +8,7 @@ export function Skills() {
       <div className="container">
         <Reveal className="section-intro">
           <p className="section-kicker">Skills</p>
-          <h2 className="section-title">The tools I reach for to ship.</h2>
+          <h2 className="section-title">Technologies I play With</h2>
         </Reveal>
 
         <div className="stack-board">

@@ -3,6 +3,7 @@ import { ReactLenis } from 'lenis/react'
 import { About } from './components/About'
 import { Contact } from './components/Contact'
 import { Cursor } from './components/Cursor'
+import { Education } from './components/Education'
 import { Experience } from './components/Experience'
 import { Footer } from './components/Footer'
 import { Hero } from './components/Hero'
@@ -44,6 +45,7 @@ function App() {
         <About />
         <Skills />
         <Experience />
+        <Education />
         <Projects />
         <Workflow />
         <Contact />

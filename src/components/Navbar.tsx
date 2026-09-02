@@ -5,6 +5,7 @@ const links = [
   { href: '#about', label: 'About' },
   { href: '#skills', label: 'Skills' },
   { href: '#experience', label: 'Experience' },
+  { href: '#education', label: 'Education' },
   { href: '#work', label: 'Work' },
   { href: '#process', label: 'Process' },
   { href: '#contact', label: 'Contact' },
@@ -25,20 +26,39 @@ export function Navbar() {
   useEffect(() => {
     const sections = links
       .map((link) => document.querySelector(link.href))
-      .filter((node): node is Element => Boolean(node))
+      .filter((node): node is HTMLElement => Boolean(node))
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-        if (visible?.target.id) setActive(`#${visible.target.id}`)
-      },
-      { threshold: [0.25, 0.45, 0.6], rootMargin: '-20% 0px -40% 0px' },
-    )
+    const syncActive = () => {
+      // Point just under the sticky nav — works for short and tall sections.
+      const marker = Math.min(160, window.innerHeight * 0.28)
+      let next = ''
 
-    sections.forEach((section) => observer.observe(section))
-    return () => observer.disconnect()
+      for (const section of sections) {
+        const { top, bottom } = section.getBoundingClientRect()
+        if (top <= marker && bottom > marker) {
+          next = `#${section.id}`
+          break
+        }
+      }
+
+      if (!next) {
+        for (const section of sections) {
+          if (section.getBoundingClientRect().top <= marker) {
+            next = `#${section.id}`
+          }
+        }
+      }
+
+      setActive((current) => (current === next ? current : next))
+    }
+
+    syncActive()
+    window.addEventListener('scroll', syncActive, { passive: true })
+    window.addEventListener('resize', syncActive)
+    return () => {
+      window.removeEventListener('scroll', syncActive)
+      window.removeEventListener('resize', syncActive)
+    }
   }, [])
 
   useEffect(() => {
@@ -83,7 +103,10 @@ export function Navbar() {
             key={link.href}
             href={link.href}
             className={active === link.href ? 'is-active' : ''}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setActive(link.href)
+              setOpen(false)
+            }}
           >
             {link.label}
           </a>
