@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #f8f7fb;
   --bg-soft: #e9e4f6;
   --surface: #fffcff;
@@ -1042,146 +1042,321 @@ button {
 
 .project-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.project-tilt {
+  height: 100%;
 }
 
 .project-card {
+  position: relative;
+  display: grid;
+  height: 100%;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 26px;
+  border-radius: 24px;
   background: var(--surface);
-  transition: transform 0.4s ease, border-color 0.4s ease;
+  box-shadow: 0 16px 40px rgba(80, 64, 150, 0.08);
+  transform-style: preserve-3d;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .project-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(169, 155, 255, 0.45);
+  border-color: rgba(109, 92, 236, 0.35);
+  box-shadow: 0 24px 54px rgba(80, 64, 150, 0.14);
 }
 
-.project-art {
+.project-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: soft-light;
+  transition: opacity 0.3s ease;
+}
+
+.project-card:hover .project-glare {
+  opacity: 1;
+}
+
+.project-cover {
   position: relative;
-  height: 210px;
-  padding: 22px 22px 0;
   overflow: hidden;
+  background: linear-gradient(160deg, #f4f2f8, #faf9fc);
 }
 
-.accent-copper .project-art {
-  background: radial-gradient(circle at 20% 20%, rgba(109, 92, 236, 0.14), transparent 42%),
-    linear-gradient(160deg, #f4f2f8, #faf9fc);
-}
-
-.accent-teal .project-art {
-  background: radial-gradient(circle at 80% 10%, rgba(14, 165, 184, 0.12), transparent 42%),
-    linear-gradient(160deg, #f3f8f9, #fafcfc);
-}
-
-.accent-gold .project-art {
-  background: radial-gradient(circle at 50% 0%, rgba(124, 107, 255, 0.12), transparent 46%),
-    linear-gradient(160deg, #f4f2f9, #faf9fc);
-}
-
-.accent-cream .project-art {
-  background: radial-gradient(circle at 30% 80%, rgba(14, 165, 184, 0.08), transparent 40%),
-    linear-gradient(160deg, #f5f3f9, #fbfafd);
-}
-
-.project-window {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.project-window span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(28, 22, 56, 0.18);
-}
-
-.project-mock {
-  height: 160px;
-  border: 1px solid var(--line);
-  border-bottom: 0;
-  border-radius: 14px 14px 0 0;
-  padding: 16px;
-  display: grid;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.72);
-  transform: translateY(12px);
-  transition: transform 0.45s ease;
-}
-
-.project-card:hover .project-mock {
-  transform: translateY(0);
-}
-
-.project-mock em {
+.project-cover img {
   display: block;
-  height: 10px;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.project-year {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(28, 22, 56, 0.1);
-  font-style: normal;
-}
-
-.project-mock em:nth-child(1) {
-  width: 38%;
-  height: 18px;
-  background: rgba(124, 107, 255, 0.45);
-}
-
-.project-mock em:nth-child(2) {
-  width: 86%;
-}
-
-.project-mock em:nth-child(3) {
-  width: 64%;
-}
-
-.project-mock em:nth-child(4) {
-  width: 72%;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .project-body {
-  padding: 24px 26px 28px;
+  display: grid;
+  gap: 10px;
+  padding: 20px 20px 22px;
 }
 
-.project-meta {
-  display: flex;
-  justify-content: space-between;
-  color: var(--gold);
-  font-size: 0.82rem;
+.project-tag {
+  margin: 0;
+  color: var(--copper);
+  font-size: 0.78rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .project-body h3 {
-  margin: 10px 0 10px;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
+  line-height: 1.25;
 }
 
-.project-body p {
-  margin: 0 0 16px;
+.project-hook {
+  margin: 0;
   color: var(--muted);
-  line-height: 1.65;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
-.project-tags {
+.project-stack {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-stack li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(109, 92, 236, 0.04);
+  color: var(--cream);
+  font-size: 0.78rem;
+}
+
+.project-stack .stack-tool-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.project-page {
+  min-height: 100vh;
+  padding: calc(var(--nav-h) + 28px) 0 72px;
+  background:
+    radial-gradient(860px 480px at 12% 8%, rgba(109, 92, 236, 0.07), transparent 55%),
+    radial-gradient(720px 420px at 88% 20%, rgba(14, 165, 184, 0.05), transparent 52%),
+    var(--bg);
+}
+
+.project-page-inner {
+  width: min(920px, calc(100% - 48px));
+}
+
+.project-back {
+  display: inline-flex;
+  margin-bottom: 28px;
+  color: var(--copper);
+  font-weight: 600;
+}
+
+.project-hero h1 {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
+}
+
+.project-page-hook {
+  margin: 0 0 22px;
+  max-width: 54ch;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.project-page-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.project-link-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.project-page-cover {
+  margin: 0 0 42px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.project-page-cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.project-section {
+  margin: 0 0 34px;
+}
+
+.project-section h2 {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+
+.project-section p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.project-page-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.project-tags li {
-  padding: 6px 10px;
+.project-page-stack li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
   border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--cream);
-  font-size: 0.78rem;
+  border-radius: 16px;
+  background: var(--surface);
+  font-size: 0.92rem;
+}
+
+.project-page-stack .stack-tool-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.project-bullets {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.project-challenge-list {
+  display: grid;
+  gap: 16px;
+}
+
+.project-challenge {
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(246, 243, 255, 0.88));
+}
+
+.project-challenge h3 {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1.35;
+}
+
+.project-challenge strong {
+  color: var(--ink);
+}
+
+.project-diagram {
+  overflow-x: auto;
+  min-height: 120px;
+  padding: 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.project-diagram.is-loading {
+  background:
+    linear-gradient(90deg, rgba(109, 92, 236, 0.04), rgba(14, 165, 184, 0.05), rgba(109, 92, 236, 0.04)),
+    var(--surface);
+}
+
+.project-diagram svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto !important;
+  margin: 0 auto;
+}
+
+.project-diagram-fallback {
+  overflow-x: auto;
+  margin: 0;
+  padding: 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.project-gallery {
+  display: grid;
+  gap: 16px;
+}
+
+.project-gallery figure {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #0b0b0d;
+}
+
+.project-gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+@media (min-width: 720px) {
+  .project-gallery {
+    grid-template-columns: 1fr;
+  }
 }
 
 .process {
@@ -1776,6 +1951,18 @@ button {
   .footer-row {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .project-page-inner {
+    width: min(920px, calc(100% - 32px));
+  }
+
+  .project-body {
+    padding: 16px 16px 18px;
+  }
+
+  .project-challenge {
+    padding: 18px;
   }
 
   .hero-role {

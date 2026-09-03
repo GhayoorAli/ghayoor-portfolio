@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { site } from '../data/site'
 
 const links = [
@@ -12,6 +13,8 @@ const links = [
 ]
 
 export function Navbar() {
+  const location = useLocation()
+  const onHome = location.pathname === '/'
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('')
@@ -24,12 +27,16 @@ export function Navbar() {
   }, [])
 
   useEffect(() => {
+    if (!onHome) {
+      setActive('')
+      return
+    }
+
     const sections = links
       .map((link) => document.querySelector(link.href))
       .filter((node): node is HTMLElement => Boolean(node))
 
     const syncActive = () => {
-      // Point just under the sticky nav — works for short and tall sections.
       const marker = Math.min(160, window.innerHeight * 0.28)
       let next = ''
 
@@ -59,7 +66,7 @@ export function Navbar() {
       window.removeEventListener('scroll', syncActive)
       window.removeEventListener('resize', syncActive)
     }
-  }, [])
+  }, [onHome])
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -99,9 +106,9 @@ export function Navbar() {
 
       <nav className="nav-links" aria-label="Primary">
         {links.map((link) => (
-          <a
+          <Link
             key={link.href}
-            href={link.href}
+            to={onHome ? link.href : `/${link.href}`}
             className={active === link.href ? 'is-active' : ''}
             onClick={() => {
               setActive(link.href)
@@ -109,13 +116,13 @@ export function Navbar() {
             }}
           >
             {link.label}
-          </a>
+          </Link>
         ))}
       </nav>
 
-      <a className="nav-cta" href="#contact">
+      <Link className="nav-cta" to={onHome ? '#contact' : '/#contact'}>
         Let’s talk
-      </a>
+      </Link>
 
       <button
         className="nav-toggle"
