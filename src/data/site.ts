@@ -188,7 +188,7 @@ export const projects: Project[] = [
     slug: 'meet-me',
     name: 'MeetMe',
     hook: 'A self-hosted video meeting platform — a lightweight Google Meet alternative with waiting rooms, guest hosting, collaborative tools, and host-controlled permissions.',
-    cover: '/projects/meet-me/cover.svg',
+    cover: '/projects/meet-me/01-home.png',
     tag: 'Video platform',
     year: '2025',
     problem:
@@ -296,7 +296,15 @@ export const projects: Project[] = [
       live: 'https://www.meet-me.tech',
       github: null,
     },
-    gallery: ['/projects/meet-me/gallery-1.svg'],
+    gallery: [
+      '/projects/meet-me/01-home.png',
+      '/projects/meet-me/03-guest-start.png',
+      '/projects/meet-me/02-signin.png',
+      '/projects/meet-me/04-meeting-room.png',
+      '/projects/meet-me/07-people-sidebar.png',
+      '/projects/meet-me/06-whiteboard.png',
+      '/projects/meet-me/05-screen-share.png',
+    ],
     results:
       'Shipped a live multi-service meeting product at meet-me.tech — Next.js on Vercel, Laravel on Railway, LiveKit for media — with guest join, waiting room, whiteboard, and host permissions working end to end.',
   },

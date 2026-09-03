@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link, useParams } from 'react-router-dom'
 import { getProjectBySlug } from '../data/site'
 import { MermaidDiagram } from './MermaidDiagram'
+import { ProjectGallery } from './ProjectGallery'
 import { TechIcon } from './TechIcon'
 
 export function ProjectDetail() {
@@ -124,13 +125,7 @@ export function ProjectDetail() {
         {project.gallery.length > 0 ? (
           <section className="project-section">
             <h2>Screenshots</h2>
-            <div className="project-gallery">
-              {project.gallery.map((src) => (
-                <figure key={src}>
-                  <img src={src} alt="" loading="lazy" />
-                </figure>
-              ))}
-            </div>
+            <ProjectGallery images={project.gallery} projectName={project.name} />
           </section>
         ) : null}
 
