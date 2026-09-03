@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { site } from '../data/site'
 
 const links = [
   { href: '#about', label: 'About' },
   { href: '#skills', label: 'Skills' },
   { href: '#experience', label: 'Experience' },
+  { href: '#education', label: 'Education' },
   { href: '#work', label: 'Work' },
   { href: '#process', label: 'Process' },
   { href: '#contact', label: 'Contact' },
 ]
 
 export function Navbar() {
+  const location = useLocation()
+  const onHome = location.pathname === '/'
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('')
@@ -23,23 +27,46 @@ export function Navbar() {
   }, [])
 
   useEffect(() => {
+    if (!onHome) {
+      setActive('')
+      return
+    }
+
     const sections = links
       .map((link) => document.querySelector(link.href))
-      .filter((node): node is Element => Boolean(node))
+      .filter((node): node is HTMLElement => Boolean(node))
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-        if (visible?.target.id) setActive(`#${visible.target.id}`)
-      },
-      { threshold: [0.25, 0.45, 0.6], rootMargin: '-20% 0px -40% 0px' },
-    )
+    const syncActive = () => {
+      const marker = Math.min(160, window.innerHeight * 0.28)
+      let next = ''
 
-    sections.forEach((section) => observer.observe(section))
-    return () => observer.disconnect()
-  }, [])
+      for (const section of sections) {
+        const { top, bottom } = section.getBoundingClientRect()
+        if (top <= marker && bottom > marker) {
+          next = `#${section.id}`
+          break
+        }
+      }
+
+      if (!next) {
+        for (const section of sections) {
+          if (section.getBoundingClientRect().top <= marker) {
+            next = `#${section.id}`
+          }
+        }
+      }
+
+      setActive((current) => (current === next ? current : next))
+    }
+
+    syncActive()
+    window.addEventListener('scroll', syncActive, { passive: true })
+    window.addEventListener('resize', syncActive)
+    return () => {
+      window.removeEventListener('scroll', syncActive)
+      window.removeEventListener('resize', syncActive)
+    }
+  }, [onHome])
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -79,20 +106,23 @@ export function Navbar() {
 
       <nav className="nav-links" aria-label="Primary">
         {links.map((link) => (
-          <a
+          <Link
             key={link.href}
-            href={link.href}
+            to={onHome ? link.href : `/${link.href}`}
             className={active === link.href ? 'is-active' : ''}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setActive(link.href)
+              setOpen(false)
+            }}
           >
             {link.label}
-          </a>
+          </Link>
         ))}
       </nav>
 
-      <a className="nav-cta" href="#contact">
+      <Link className="nav-cta" to={onHome ? '#contact' : '/#contact'}>
         Let’s talk
-      </a>
+      </Link>
 
       <button
         className="nav-toggle"

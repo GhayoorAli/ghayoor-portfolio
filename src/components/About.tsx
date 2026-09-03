@@ -27,7 +27,7 @@ export function About() {
                 {paragraph}
               </p>
             ))}
-            <p className="about-note">Currently building with Laravel, MySQL, React, and Next.js — open to discuss new opportunities.</p>
+            <p className="about-note">Open to discuss new opportunities.</p>
           </Reveal>
         </div>
       </div>
