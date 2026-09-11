@@ -1,6 +1,6 @@
 # Muhammad Ghayoor Ali — Portfolio
 
-Personal site for a full stack developer. Built with Vite, React, and TypeScript.
+Next.js portfolio with an optional Supabase admin CMS (PostgreSQL + Storage).
 
 ## Run locally
 
@@ -9,16 +9,24 @@ npm install
 npm run dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173).
+Open [http://localhost:3000](http://localhost:3000).
 
-## Customize
+Without Supabase env vars, the site uses seeded content from `src/data/site.ts`.
 
-Edit `src/data/site.ts` to replace:
+## Admin CMS
 
-- name, email, and social links
-- about copy
-- tech stack
-- experience
-- projects
+See [ADMIN.md](ADMIN.md) for Supabase setup, migrations, seeding, and `/admin` login.
 
-The color system lives in `src/index.css` under `:root` (ink, copper, gold, and teal).
+## Scripts
+
+| Command | Purpose |
+|--------|---------|
+| `npm run dev` | Next.js dev server |
+| `npm run build` | Production build |
+| `npm start` | Serve production build |
+| `npm run seed` | Seed Supabase from local fallback data |
+| `npm run lint` | Oxlint |
+
+## Customize without Supabase
+
+Edit `src/data/site.ts` (seed / offline fallback). Styles live in `src/app/globals.css`.

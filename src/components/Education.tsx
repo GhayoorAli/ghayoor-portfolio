@@ -1,72 +1,76 @@
-import { certifications, education } from '../data/site'
+'use client'
+
+import type { CertificationItem, EducationItem } from '@/types/content'
 import { Reveal } from './Reveal'
 
-export function Education() {
+export function Education({
+  education,
+  certifications,
+}: {
+  education: EducationItem[]
+  certifications: CertificationItem[]
+}) {
   return (
     <section className="section credentials" id="education">
       <div className="container">
         <Reveal className="section-intro">
-          <p className="section-kicker">Education & Certifications</p>
-          <h2 className="section-title">Learning that supports the craft.</h2>
+          <p className="section-kicker">Education</p>
+          <h2 className="section-title">The foundation behind the work.</h2>
         </Reveal>
 
-        <Reveal className="credentials-block" from="left">
-          <h3 className="credentials-heading">Education</h3>
-          <ol className="edu-list">
-            {education.map((item) => (
-              <li key={item.school} className="edu-item">
-                <span className="edu-mark" aria-hidden="true" />
-                <div className="edu-copy">
-                  <p className="edu-period">{item.period}</p>
-                  <h4>{item.school}</h4>
-                  <p className="edu-degree">{item.degree}</p>
-                  <p className="edu-place">{item.place}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </Reveal>
+        <div className="edu-grid">
+          <Reveal className="edu-block">
+            <h3 className="block-label">Schools</h3>
+            <ul className="edu-list">
+              {education.map((item) => (
+                <li key={item.school}>
+                  <span>{item.period}</span>
+                  <strong>{item.school}</strong>
+                  <p>{item.degree}</p>
+                  <em>{item.place}</em>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
 
-        <Reveal className="credentials-block cert-block" delay={100} from="up">
-          <h3 className="credentials-heading">Certifications</h3>
-          <ul className="cert-gallery">
-            {certifications.map((item, index) => {
-              const media = (
-                <figure className="cert-frame">
-                  <img src={item.image} alt={`${item.title} — ${item.issuer}`} loading="lazy" />
-                </figure>
-              )
-
-              return (
-                <Reveal as="li" className="cert-item" delay={index * 70} from="scale" key={`${item.title}-${item.date}`}>
-                  {item.url ? (
-                    <a className="cert-shot" href={item.url} target="_blank" rel="noreferrer">
-                      {media}
-                      <span className="cert-caption">
-                        <strong>{item.title}</strong>
-                        <span>
-                          {item.issuer} · {item.date}
-                        </span>
-                        <em>Verify certificate →</em>
-                      </span>
-                    </a>
-                  ) : (
-                    <div className="cert-shot is-static">
-                      {media}
-                      <span className="cert-caption">
-                        <strong>{item.title}</strong>
-                        <span>
-                          {item.issuer} · {item.date}
-                          {'note' in item && item.note ? ` · ${item.note}` : ''}
-                        </span>
-                      </span>
-                    </div>
-                  )}
-                </Reveal>
-              )
-            })}
-          </ul>
-        </Reveal>
+          <Reveal className="edu-block" delay={80}>
+            <h3 className="block-label">Certifications</h3>
+            <ul className="cert-strip">
+              {certifications.map((item) => {
+                const inner = (
+                  <>
+                    <span className="cert-thumb">
+                      <img
+                        className="cert-thumb-img"
+                        src={item.image}
+                        alt={`${item.title} certificate`}
+                        loading="lazy"
+                      />
+                      <img className="cert-zoom" src={item.image} alt="" aria-hidden="true" />
+                    </span>
+                    <span className="cert-copy">
+                      <strong>{item.title}</strong>
+                      <small>
+                        {item.issuer} · {item.date}
+                      </small>
+                    </span>
+                  </>
+                )
+                return (
+                  <li key={`${item.title}-${item.date}`}>
+                    {item.url ? (
+                      <a className="cert-card" href={item.url} target="_blank" rel="noreferrer">
+                        {inner}
+                      </a>
+                    ) : (
+                      <div className="cert-card">{inner}</div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </Reveal>
+        </div>
       </div>
     </section>
   )
