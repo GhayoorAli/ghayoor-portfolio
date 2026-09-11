@@ -1,3 +1,5 @@
+'use client'
+
 import { AnimatePresence, motion, wrap } from 'framer-motion'
 import { useEffect, useState, type KeyboardEvent } from 'react'
 

@@ -1,29 +1,13 @@
+'use client'
+
 import { motion } from 'framer-motion'
-import { Link, useParams } from 'react-router-dom'
-import { getProjectBySlug } from '../data/site'
+import Link from 'next/link'
+import type { Project } from '@/types/content'
 import { MermaidDiagram } from './MermaidDiagram'
 import { ProjectGallery } from './ProjectGallery'
 import { TechIcon } from './TechIcon'
 
-export function ProjectDetail() {
-  const { slug = '' } = useParams()
-  const project = getProjectBySlug(slug)
-
-  if (!project) {
-    return (
-      <main className="project-page">
-        <div className="container project-page-inner">
-          <p className="section-kicker">Selected work</p>
-          <h1 className="section-title">Project not found.</h1>
-          <p className="lede">That slug is not in the portfolio yet.</p>
-          <Link className="btn btn-primary" to="/#work">
-            Back to work
-          </Link>
-        </div>
-      </main>
-    )
-  }
-
+export function ProjectDetail({ project }: { project: Project }) {
   return (
     <main className="project-page">
       <motion.div
@@ -32,7 +16,7 @@ export function ProjectDetail() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Link className="project-back" to="/#work">
+        <Link className="project-back" href="/#work">
           ← Back to work
         </Link>
 
@@ -74,7 +58,7 @@ export function ProjectDetail() {
           <h2>Tech stack</h2>
           <ul className="project-page-stack">
             {project.stack.map((item) => (
-              <li key={item.id}>
+              <li key={`${item.id}-${item.name}`}>
                 <TechIcon id={item.id} title={item.name} />
                 <span>{item.name}</span>
               </li>

@@ -1,7 +1,9 @@
-import { experience } from '../data/site'
+'use client'
+
+import type { ExperienceItem } from '@/types/content'
 import { Reveal } from './Reveal'
 
-export function Experience() {
+export function Experience({ items }: { items: ExperienceItem[] }) {
   return (
     <section className="section experience" id="experience">
       <div className="container">
@@ -10,25 +12,19 @@ export function Experience() {
           <h2 className="section-title">Years spent solving real problems.</h2>
         </Reveal>
 
-        <ol className="timeline">
-          {experience.map((item, index) => (
-            <Reveal as="li" className="timeline-item" delay={index * 100} from="right" key={`${item.role}-${item.period}`}>
-              <div className="timeline-meta">
+        <ol className="exp-list">
+          {items.map((item, index) => (
+            <Reveal as="li" className="exp-row" delay={index * 60} key={`${item.role}-${item.period}`}>
+              <div className="exp-meta">
                 <span>{item.period}</span>
+                <span>{item.location}</span>
               </div>
-              <div className="timeline-card">
+              <div className="exp-body">
                 <h3>{item.role}</h3>
-                <p className="timeline-company">
-                  {item.company}
-                  <span> · {item.location}</span>
-                </p>
-                <ul className="timeline-stack">
-                  {item.stack.map((tool) => (
-                    <li key={tool}>{tool}</li>
-                  ))}
-                </ul>
-                <p className="timeline-summary">{item.summary}</p>
-                <ul>
+                <p className="exp-company">{item.company}</p>
+                <p className="exp-stack">{item.stack.join(' · ')}</p>
+                <p className="exp-summary">{item.summary}</p>
+                <ul className="exp-points">
                   {item.points.map((point) => (
                     <li key={point}>{point}</li>
                   ))}

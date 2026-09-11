@@ -1,31 +1,33 @@
-import { stackGroups } from '../data/site'
+'use client'
+
+import type { SkillGroup } from '@/types/content'
 import { Reveal } from './Reveal'
 import { TechIcon } from './TechIcon'
 
-export function Skills() {
+export function Skills({ groups }: { groups: SkillGroup[] }) {
   return (
     <section className="section skills" id="skills">
       <div className="container">
         <Reveal className="section-intro">
           <p className="section-kicker">Skills</p>
-          <h2 className="section-title">Technologies I play With</h2>
+          <h2 className="section-title">Skills & Technologies</h2>
         </Reveal>
 
-        <div className="stack-board">
-          {stackGroups.map((group, groupIndex) => (
-            <Reveal key={group.category} className="stack-group" delay={groupIndex * 100}>
-              <h3 className="stack-category">{group.category}</h3>
-              <ul className="stack-items">
+        <ul className="skill-rows">
+          {groups.map((group, index) => (
+            <Reveal as="li" className="skill-row" key={group.category} delay={index * 50}>
+              <h3>{group.category}</h3>
+              <ul className="skill-tools">
                 {group.items.map((item) => (
-                  <li key={item.id} className="stack-card">
-                    <TechIcon id={item.id} title={item.name} />
+                  <li key={item.id}>
+                    <TechIcon id={item.icon_id || item.id} title={item.name} />
                     <span>{item.name}</span>
                   </li>
                 ))}
               </ul>
             </Reveal>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   )
