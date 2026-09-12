@@ -2,7 +2,8 @@ import { getFallbackContent } from '@/lib/fallback-content'
 import { ICON_OPTIONS, mergeIconOptions, type IconOption } from '@/lib/icon-catalog'
 import { applyReadmeToProject } from '@/lib/project-readme'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
+import { createClient as createAuthClient } from '@/lib/supabase/server'
 import type {
   CertificationItem,
   EducationItem,
@@ -24,7 +25,7 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
   if (!supabaseReady()) return getFallbackContent()
 
   try {
-    const supabase = await createClient()
+    const supabase = createPublicClient()
     const [
       settingsRes,
       socialsRes,
@@ -221,7 +222,7 @@ export async function getTechnologyIcons(): Promise<IconOption[]> {
   if (!supabaseReady()) return mergeIconOptions([])
 
   try {
-    const supabase = await createClient()
+    const supabase = createPublicClient()
     const { data, error } = await supabase.from('technology_icons').select('*').order('name')
     if (error) return mergeIconOptions([])
     return mergeIconOptions(
@@ -239,7 +240,7 @@ export async function getTechnologyIcons(): Promise<IconOption[]> {
 
 export async function getAllProjectsAdmin() {
   if (!supabaseReady()) return getFallbackContent().projects
-  const supabase = await createClient()
+  const supabase = await createAuthClient()
   const technologyIcons = await getTechnologyIcons()
   const iconById = new Map(technologyIcons.map((icon) => [icon.id, icon]))
   const { data: projects } = await supabase.from('projects').select('*').order('sort_order')
