@@ -4,10 +4,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { revalidatePortfolio } from '@/app/admin/actions'
-import { IconSelect } from '@/components/admin/IconSelect'
-import { LineListEditor } from '@/components/admin/LineListEditor'
+import { ReadmePreview } from '@/components/admin/ReadmePreview'
+import type { IconOption } from '@/lib/icon-catalog'
+import { applyReadmeToProject } from '@/lib/project-readme'
 import { createClient } from '@/lib/supabase/client'
-import type { Project, ProjectChallenge } from '@/types/content'
+import type { Project } from '@/types/content'
 
 const emptyProject = (): Project => ({
   slug: '',
@@ -26,26 +27,33 @@ const emptyProject = (): Project => ({
   links: { live: null, github: null },
   gallery: [],
   results: '',
+  readme: '',
   is_published: true,
 })
 
-const SECTIONS = [
-  { id: 'basics', label: 'Basics' },
-  { id: 'story', label: 'Story' },
-  { id: 'stack', label: 'Stack' },
-  { id: 'challenges', label: 'Challenges' },
-  { id: 'media', label: 'Media' },
-] as const
+const README_HINT = `Use these headings so the public page can style the sections:
 
-type SectionId = (typeof SECTIONS)[number]['id']
+## The problem
+## My role
+## Tech stack
+## Features
+## Architecture
+## Challenges & solutions
 
-export function ProjectAdminForm({ initial }: { initial: Project | null }) {
+You can delete any section you do not need. Installation, env, and licence text can stay out.`
+
+export function ProjectAdminForm({
+  initial,
+  initialIcons,
+}: {
+  initial: Project | null
+  initialIcons: IconOption[]
+}) {
   const router = useRouter()
   const [project, setProject] = useState<Project>(initial ?? emptyProject())
-  const [features, setFeatures] = useState<string[]>(initial?.features ?? [])
   const [gallery, setGallery] = useState<string[]>(initial?.gallery ?? [])
-  const [challenges, setChallenges] = useState<ProjectChallenge[]>(initial?.challenges ?? [])
-  const [section, setSection] = useState<SectionId>('basics')
+  const [readme, setReadme] = useState(initial?.readme ?? '')
+  const [preview, setPreview] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -79,25 +87,27 @@ export function ProjectAdminForm({ initial }: { initial: Project | null }) {
     setError('')
     try {
       if (!project.slug.trim() || !project.name.trim()) throw new Error('Slug and name are required')
+      const styled = applyReadmeToProject({ ...project, gallery }, readme, initialIcons)
       const supabase = createClient()
 
       const row = {
-        slug: project.slug.trim(),
-        name: project.name.trim(),
-        hook: project.hook,
-        cover_url: project.cover,
-        tag: project.tag,
-        year: project.year,
-        problem: project.problem,
-        role: project.role,
-        features,
-        challenges,
-        architecture: project.architecture || null,
-        workflow: project.workflow || null,
-        results: project.results || null,
-        live_url: project.links.live,
-        github_url: project.links.github,
-        is_published: project.is_published ?? true,
+        slug: styled.slug.trim(),
+        name: styled.name.trim(),
+        hook: styled.hook,
+        cover_url: styled.cover,
+        tag: styled.tag,
+        year: styled.year,
+        problem: styled.problem,
+        role: styled.role,
+        features: styled.features,
+        challenges: styled.challenges,
+        architecture: styled.architecture || null,
+        workflow: styled.workflow || null,
+        results: styled.results || null,
+        readme,
+        live_url: styled.links.live,
+        github_url: styled.links.github,
+        is_published: styled.is_published ?? true,
         updated_at: new Date().toISOString(),
       }
 
@@ -114,9 +124,9 @@ export function ProjectAdminForm({ initial }: { initial: Project | null }) {
       await supabase.from('project_stack').delete().eq('project_id', projectId)
       await supabase.from('project_images').delete().eq('project_id', projectId)
 
-      if (project.stack.length) {
+      if (styled.stack.length) {
         const { error: stackError } = await supabase.from('project_stack').insert(
-          project.stack.map((item, index) => ({
+          styled.stack.map((item, index) => ({
             project_id: projectId,
             icon_id: item.id,
             name: item.name,
@@ -161,7 +171,9 @@ export function ProjectAdminForm({ initial }: { initial: Project | null }) {
             ← Projects
           </Link>
           <h1>{title}</h1>
-          <p className="admin-lead">Everything that powers the public `/work/[slug]` page.</p>
+          <p className="admin-lead">
+            Basics and images here. Story sections come from the README headings on the public page.
+          </p>
         </div>
         <div className="admin-page-actions">
           <label className="admin-switch">
@@ -184,365 +196,204 @@ export function ProjectAdminForm({ initial }: { initial: Project | null }) {
       {message ? <p className="admin-msg">{message}</p> : null}
       {error ? <p className="admin-msg error">{error}</p> : null}
 
-      <nav className="admin-tabs" aria-label="Project sections">
-        {SECTIONS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`admin-tab ${section === item.id ? 'is-active' : ''}`}
-            onClick={() => setSection(item.id)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
-      {section === 'basics' ? (
-        <section className="admin-card">
-          <div className="admin-grid two">
-            <div className="admin-field">
-              <label>Slug</label>
-              <input
-                value={project.slug}
-                placeholder="meet-me"
-                onChange={(e) => setProject((p) => ({ ...p, slug: e.target.value }))}
-              />
-            </div>
-            <div className="admin-field">
-              <label>Name</label>
-              <input
-                value={project.name}
-                onChange={(e) => setProject((p) => ({ ...p, name: e.target.value }))}
-              />
-            </div>
-            <div className="admin-field">
-              <label>Category tag</label>
-              <input
-                value={project.tag}
-                placeholder="Video platform"
-                onChange={(e) => setProject((p) => ({ ...p, tag: e.target.value }))}
-              />
-            </div>
-            <div className="admin-field">
-              <label>Year</label>
-              <input
-                value={project.year}
-                placeholder="2025"
-                onChange={(e) => setProject((p) => ({ ...p, year: e.target.value }))}
-              />
-            </div>
-            <div className="admin-field">
-              <label>Live URL</label>
-              <input
-                value={project.links.live ?? ''}
-                placeholder="https://"
-                onChange={(e) =>
-                  setProject((p) => ({ ...p, links: { ...p.links, live: e.target.value || null } }))
-                }
-              />
-            </div>
-            <div className="admin-field">
-              <label>GitHub URL</label>
-              <input
-                value={project.links.github ?? ''}
-                placeholder="https://github.com/…"
-                onChange={(e) =>
-                  setProject((p) => ({ ...p, links: { ...p.links, github: e.target.value || null } }))
-                }
-              />
-            </div>
+      <section className="admin-card">
+        <div className="admin-section-head">
+          <div>
+            <h2>Basic info</h2>
+            <p className="admin-section-sub">Shown in the hero on `/work/[slug]`</p>
           </div>
-          <div className="admin-field" style={{ marginTop: 14 }}>
-            <label>Hook</label>
-            <textarea
-              rows={3}
-              value={project.hook}
-              onChange={(e) => setProject((p) => ({ ...p, hook: e.target.value }))}
-            />
-          </div>
-        </section>
-      ) : null}
-
-      {section === 'story' ? (
-        <section className="admin-card">
+        </div>
+        <div className="admin-grid two">
           <div className="admin-field">
-            <label>Problem</label>
-            <textarea
-              rows={4}
-              value={project.problem}
-              onChange={(e) => setProject((p) => ({ ...p, problem: e.target.value }))}
+            <label>Slug</label>
+            <input
+              value={project.slug}
+              placeholder="meet-me"
+              onChange={(e) => setProject((p) => ({ ...p, slug: e.target.value }))}
             />
           </div>
-          <div className="admin-field" style={{ marginTop: 14 }}>
-            <label>Role</label>
-            <textarea
-              rows={3}
-              value={project.role}
-              onChange={(e) => setProject((p) => ({ ...p, role: e.target.value }))}
+          <div className="admin-field">
+            <label>Name</label>
+            <input
+              value={project.name}
+              onChange={(e) => setProject((p) => ({ ...p, name: e.target.value }))}
             />
           </div>
-          <div className="admin-field" style={{ marginTop: 14 }}>
-            <label>Features</label>
-            <LineListEditor
-              values={features}
-              onChange={setFeatures}
-              placeholder="Add a feature"
-              addLabel="Add feature"
+          <div className="admin-field">
+            <label>Category tag</label>
+            <input
+              value={project.tag}
+              placeholder="Video platform"
+              onChange={(e) => setProject((p) => ({ ...p, tag: e.target.value }))}
             />
           </div>
-          <div className="admin-field" style={{ marginTop: 14 }}>
-            <label>Results</label>
-            <textarea
-              rows={4}
-              value={project.results ?? ''}
-              onChange={(e) => setProject((p) => ({ ...p, results: e.target.value }))}
+          <div className="admin-field">
+            <label>Year</label>
+            <input
+              value={project.year}
+              placeholder="2025"
+              onChange={(e) => setProject((p) => ({ ...p, year: e.target.value }))}
             />
           </div>
-          <div className="admin-grid two" style={{ marginTop: 14 }}>
-            <div className="admin-field">
-              <label>Architecture (Mermaid)</label>
-              <textarea
-                className="admin-code"
-                rows={10}
-                value={project.architecture ?? ''}
-                onChange={(e) => setProject((p) => ({ ...p, architecture: e.target.value }))}
-              />
-            </div>
-            <div className="admin-field">
-              <label>Workflow (Mermaid)</label>
-              <textarea
-                className="admin-code"
-                rows={10}
-                value={project.workflow ?? ''}
-                onChange={(e) => setProject((p) => ({ ...p, workflow: e.target.value }))}
-              />
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      {section === 'stack' ? (
-        <section className="admin-card">
-          <div className="admin-section-head">
-            <div>
-              <h2>Tech stack</h2>
-              <p className="admin-section-sub">Shown as icons on the project card and detail page</p>
-            </div>
-            <button
-              className="admin-btn secondary admin-btn-sm"
-              type="button"
-              onClick={() =>
-                setProject((p) => ({ ...p, stack: [...p.stack, { id: 'react', name: 'React' }] }))
+          <div className="admin-field">
+            <label>Live URL</label>
+            <input
+              value={project.links.live ?? ''}
+              placeholder="https://"
+              onChange={(e) =>
+                setProject((p) => ({ ...p, links: { ...p.links, live: e.target.value || null } }))
               }
-            >
-              + Add technology
-            </button>
+            />
           </div>
-
-          <div className="admin-skill-table">
-            <div className="admin-skill-head">
-              <span>Icon</span>
-              <span>Label</span>
-              <span />
-            </div>
-            {project.stack.map((item, index) => (
-              <div className="admin-skill-row" key={`${item.id}-${index}`}>
-                <IconSelect
-                  value={item.id}
-                  onChange={(iconId, label) =>
-                    setProject((p) => ({
-                      ...p,
-                      stack: p.stack.map((s, i) =>
-                        i === index
-                          ? { id: iconId, name: s.name.trim() ? s.name : label }
-                          : s,
-                      ),
-                    }))
-                  }
-                />
-                <input
-                  value={item.name}
-                  onChange={(e) =>
-                    setProject((p) => ({
-                      ...p,
-                      stack: p.stack.map((s, i) => (i === index ? { ...s, name: e.target.value } : s)),
-                    }))
-                  }
-                />
-                <button
-                  type="button"
-                  className="admin-icon-btn danger"
-                  aria-label="Remove"
-                  onClick={() =>
-                    setProject((p) => ({ ...p, stack: p.stack.filter((_, i) => i !== index) }))
-                  }
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+          <div className="admin-field">
+            <label>GitHub URL</label>
+            <input
+              value={project.links.github ?? ''}
+              placeholder="https://github.com/…"
+              onChange={(e) =>
+                setProject((p) => ({ ...p, links: { ...p.links, github: e.target.value || null } }))
+              }
+            />
           </div>
-        </section>
-      ) : null}
+        </div>
+        <div className="admin-field" style={{ marginTop: 14 }}>
+          <label>Hook</label>
+          <textarea
+            rows={3}
+            value={project.hook}
+            onChange={(e) => setProject((p) => ({ ...p, hook: e.target.value }))}
+          />
+        </div>
+      </section>
 
-      {section === 'challenges' ? (
-        <section className="admin-card">
-          <div className="admin-section-head">
-            <div>
-              <h2>Challenges</h2>
-              <p className="admin-section-sub">Problem → solution pairs</p>
+      <section className="admin-card">
+        <div className="admin-section-head">
+          <div>
+            <h2>Cover</h2>
+            <p className="admin-section-sub">Main project thumbnail</p>
+          </div>
+          <label className="admin-file-btn">
+            {uploading ? 'Uploading…' : 'Upload cover'}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              disabled={uploading}
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                try {
+                  await upload(file, true)
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Upload failed')
+                }
+              }}
+            />
+          </label>
+        </div>
+
+        <div className="admin-cover-row">
+          {project.cover ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={project.cover} alt="" className="admin-cover-preview" />
+          ) : (
+            <div className="admin-cert-placeholder">No cover yet</div>
+          )}
+          <div className="admin-field admin-field-grow">
+            <label>Cover URL</label>
+            <input
+              value={project.cover}
+              onChange={(e) => setProject((p) => ({ ...p, cover: e.target.value }))}
+            />
+          </div>
+        </div>
+
+        <div className="admin-section-head" style={{ marginTop: 28 }}>
+          <div>
+            <h2>Gallery</h2>
+            <p className="admin-section-sub">Screenshot carousel images</p>
+          </div>
+          <label className="admin-file-btn">
+            {uploading ? 'Uploading…' : 'Upload image'}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              disabled={uploading}
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                try {
+                  await upload(file, false)
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Upload failed')
+                }
+              }}
+            />
+          </label>
+        </div>
+
+        <div className="admin-gallery-grid">
+          {gallery.map((url, index) => (
+            <div className="admin-gallery-item" key={`${url}-${index}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" />
+              <button
+                type="button"
+                className="admin-icon-btn danger"
+                aria-label="Remove image"
+                onClick={() => setGallery((prev) => prev.filter((_, i) => i !== index))}
+              >
+                ×
+              </button>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="admin-card admin-readme-card">
+        <div className="admin-section-head">
+          <div>
+            <h2>README</h2>
+            <p className="admin-section-sub">
+              Paste GitHub README markdown. The public page styles matching headings the same as
+              before — nothing is auto-filled into extra form fields.
+            </p>
+          </div>
+          <div className="admin-readme-tabs" role="tablist" aria-label="README editor">
             <button
-              className="admin-btn secondary admin-btn-sm"
               type="button"
-              onClick={() => setChallenges((prev) => [...prev, { title: '', problem: '', solution: '' }])}
+              className={`admin-tab ${!preview ? 'is-active' : ''}`}
+              onClick={() => setPreview(false)}
             >
-              + Add challenge
+              Write
+            </button>
+            <button
+              type="button"
+              className={`admin-tab ${preview ? 'is-active' : ''}`}
+              onClick={() => setPreview(true)}
+            >
+              Preview
             </button>
           </div>
+        </div>
 
-          <div className="admin-stack">
-            {challenges.map((item, index) => (
-              <div className="admin-subcard" key={index}>
-                <div className="admin-card-toolbar">
-                  <strong>{item.title || `Challenge ${index + 1}`}</strong>
-                  <button
-                    type="button"
-                    className="admin-icon-btn danger"
-                    onClick={() => setChallenges((prev) => prev.filter((_, i) => i !== index))}
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="admin-field">
-                  <label>Title</label>
-                  <input
-                    value={item.title}
-                    onChange={(e) =>
-                      setChallenges((prev) =>
-                        prev.map((c, i) => (i === index ? { ...c, title: e.target.value } : c)),
-                      )
-                    }
-                  />
-                </div>
-                <div className="admin-grid two" style={{ marginTop: 12 }}>
-                  <div className="admin-field">
-                    <label>Challenge</label>
-                    <textarea
-                      rows={4}
-                      value={item.problem}
-                      onChange={(e) =>
-                        setChallenges((prev) =>
-                          prev.map((c, i) => (i === index ? { ...c, problem: e.target.value } : c)),
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="admin-field">
-                    <label>Solution</label>
-                    <textarea
-                      rows={4}
-                      value={item.solution}
-                      onChange={(e) =>
-                        setChallenges((prev) =>
-                          prev.map((c, i) => (i === index ? { ...c, solution: e.target.value } : c)),
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
+        {preview ? (
+          <ReadmePreview value={readme} />
+        ) : (
+          <div className="admin-field">
+            <label htmlFor="project-readme">Markdown</label>
+            <textarea
+              id="project-readme"
+              className="admin-code admin-readme-editor"
+              rows={22}
+              value={readme}
+              placeholder={README_HINT}
+              onChange={(event) => setReadme(event.target.value)}
+            />
           </div>
-        </section>
-      ) : null}
-
-      {section === 'media' ? (
-        <section className="admin-card">
-          <div className="admin-section-head">
-            <div>
-              <h2>Cover</h2>
-              <p className="admin-section-sub">Main project thumbnail</p>
-            </div>
-            <label className="admin-file-btn">
-              {uploading ? 'Uploading…' : 'Upload cover'}
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                disabled={uploading}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  try {
-                    await upload(file, true)
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : 'Upload failed')
-                  }
-                }}
-              />
-            </label>
-          </div>
-
-          <div className="admin-cover-row">
-            {project.cover ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={project.cover} alt="" className="admin-cover-preview" />
-            ) : (
-              <div className="admin-cert-placeholder">No cover yet</div>
-            )}
-            <div className="admin-field admin-field-grow">
-              <label>Cover URL</label>
-              <input
-                value={project.cover}
-                onChange={(e) => setProject((p) => ({ ...p, cover: e.target.value }))}
-              />
-            </div>
-          </div>
-
-          <div className="admin-section-head" style={{ marginTop: 28 }}>
-            <div>
-              <h2>Gallery</h2>
-              <p className="admin-section-sub">Screenshot carousel images</p>
-            </div>
-            <label className="admin-file-btn">
-              {uploading ? 'Uploading…' : 'Upload image'}
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                disabled={uploading}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  try {
-                    await upload(file, false)
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : 'Upload failed')
-                  }
-                }}
-              />
-            </label>
-          </div>
-
-          <div className="admin-gallery-grid">
-            {gallery.map((url, index) => (
-              <div className="admin-gallery-item" key={`${url}-${index}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" />
-                <button
-                  type="button"
-                  className="admin-icon-btn danger"
-                  aria-label="Remove image"
-                  onClick={() => setGallery((prev) => prev.filter((_, i) => i !== index))}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
+        )}
+      </section>
 
       {project.id ? (
         <div className="admin-danger-zone">

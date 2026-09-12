@@ -1,4 +1,6 @@
 import { getFallbackContent } from '@/lib/fallback-content'
+import { ICON_OPTIONS, mergeIconOptions, type IconOption } from '@/lib/icon-catalog'
+import { applyReadmeToProject } from '@/lib/project-readme'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import { createClient } from '@/lib/supabase/server'
 import type {
@@ -28,6 +30,7 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
       socialsRes,
       groupsRes,
       skillsRes,
+      technologyIconsRes,
       projectsRes,
       stackRes,
       imagesRes,
@@ -40,6 +43,7 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
       supabase.from('social_links').select('*').eq('is_active', true).order('sort_order'),
       supabase.from('skill_groups').select('*').order('sort_order'),
       supabase.from('skills').select('*').order('sort_order'),
+      supabase.from('technology_icons').select('*').order('name'),
       supabase.from('projects').select('*').eq('is_published', true).order('sort_order'),
       supabase.from('project_stack').select('*').order('sort_order'),
       supabase.from('project_images').select('*').order('sort_order'),
@@ -77,10 +81,25 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
       is_active: row.is_active,
     }))
 
+    const technologyIcons = mergeIconOptions(
+      (technologyIconsRes.data ?? []).map((row) => ({
+        id: row.key,
+        label: row.name,
+        src: row.icon_url,
+        isBuiltIn: row.is_builtin,
+      })),
+    )
+    const iconById = new Map(technologyIcons.map((icon) => [icon.id, icon]))
+
     const skillsByGroup = new Map<string, SkillGroup['items']>()
     for (const skill of skillsRes.data ?? []) {
       const list = skillsByGroup.get(skill.group_id) ?? []
-      list.push({ id: skill.id, name: skill.name, icon_id: skill.icon_id })
+      list.push({
+        id: skill.id,
+        name: skill.name,
+        icon_id: skill.icon_id,
+        icon_url: iconById.get(skill.icon_id)?.src,
+      })
       skillsByGroup.set(skill.group_id, list)
     }
 
@@ -94,7 +113,11 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
     const stackByProject = new Map<string, Project['stack']>()
     for (const row of stackRes.data ?? []) {
       const list = stackByProject.get(row.project_id) ?? []
-      list.push({ id: row.icon_id, name: row.name })
+      list.push({
+        id: row.icon_id,
+        name: row.name,
+        icon_url: iconById.get(row.icon_id)?.src,
+      })
       stackByProject.set(row.project_id, list)
     }
 
@@ -105,27 +128,31 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
       galleryByProject.set(row.project_id, list)
     }
 
-    const projects: Project[] = (projectsRes.data ?? []).map((row) => ({
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      hook: row.hook,
-      cover: row.cover_url,
-      tag: row.tag,
-      year: row.year,
-      problem: row.problem,
-      role: row.role,
-      stack: stackByProject.get(row.id) ?? [],
-      features: row.features ?? [],
-      challenges: (row.challenges ?? []) as ProjectChallenge[],
-      architecture: row.architecture,
-      workflow: row.workflow,
-      links: { live: row.live_url, github: row.github_url },
-      gallery: galleryByProject.get(row.id) ?? [],
-      results: row.results,
-      sort_order: row.sort_order,
-      is_published: row.is_published,
-    }))
+    const projects: Project[] = (projectsRes.data ?? []).map((row) => {
+      const project: Project = {
+        id: row.id,
+        slug: row.slug,
+        name: row.name,
+        hook: row.hook,
+        cover: row.cover_url,
+        tag: row.tag,
+        year: row.year,
+        problem: row.problem,
+        role: row.role,
+        stack: stackByProject.get(row.id) ?? [],
+        features: row.features ?? [],
+        challenges: (row.challenges ?? []) as ProjectChallenge[],
+        architecture: row.architecture,
+        workflow: row.workflow,
+        links: { live: row.live_url, github: row.github_url },
+        gallery: galleryByProject.get(row.id) ?? [],
+        results: row.results,
+        readme: row.readme ?? '',
+        sort_order: row.sort_order,
+        is_published: row.is_published,
+      }
+      return row.readme ? applyReadmeToProject(project, row.readme, technologyIcons) : project
+    })
 
     const experience: ExperienceItem[] = (experienceRes.data ?? []).map((row) => ({
       id: row.id,
@@ -190,9 +217,31 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   return content.projects.find((project) => project.slug === slug) ?? null
 }
 
+export async function getTechnologyIcons(): Promise<IconOption[]> {
+  if (!supabaseReady()) return mergeIconOptions([])
+
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('technology_icons').select('*').order('name')
+    if (error) return mergeIconOptions([])
+    return mergeIconOptions(
+      (data ?? []).map((row) => ({
+        id: row.key,
+        label: row.name,
+        src: row.icon_url,
+        isBuiltIn: row.is_builtin,
+      })),
+    )
+  } catch {
+    return ICON_OPTIONS.map((icon) => ({ ...icon, isBuiltIn: true }))
+  }
+}
+
 export async function getAllProjectsAdmin() {
   if (!supabaseReady()) return getFallbackContent().projects
   const supabase = await createClient()
+  const technologyIcons = await getTechnologyIcons()
+  const iconById = new Map(technologyIcons.map((icon) => [icon.id, icon]))
   const { data: projects } = await supabase.from('projects').select('*').order('sort_order')
   const { data: stack } = await supabase.from('project_stack').select('*').order('sort_order')
   const { data: images } = await supabase.from('project_images').select('*').order('sort_order')
@@ -200,7 +249,11 @@ export async function getAllProjectsAdmin() {
   const stackByProject = new Map<string, Project['stack']>()
   for (const row of stack ?? []) {
     const list = stackByProject.get(row.project_id) ?? []
-    list.push({ id: row.icon_id, name: row.name })
+    list.push({
+      id: row.icon_id,
+      name: row.name,
+      icon_url: iconById.get(row.icon_id)?.src,
+    })
     stackByProject.set(row.project_id, list)
   }
   const galleryByProject = new Map<string, string[]>()
@@ -228,6 +281,7 @@ export async function getAllProjectsAdmin() {
     links: { live: row.live_url, github: row.github_url },
     gallery: galleryByProject.get(row.id) ?? [],
     results: row.results,
+    readme: row.readme ?? '',
     sort_order: row.sort_order,
     is_published: row.is_published,
   }))

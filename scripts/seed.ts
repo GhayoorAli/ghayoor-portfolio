@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { getFallbackContent } from '../src/lib/fallback-content'
+import { ICON_OPTIONS } from '../src/lib/icon-catalog'
 
 function loadEnvFile(filename: string) {
   const path = resolve(process.cwd(), filename)
@@ -40,6 +41,20 @@ async function main() {
     auth: { persistSession: false, autoRefreshToken: false },
   })
   const content = getFallbackContent()
+
+  const { error: iconError } = await supabase.from('technology_icons').upsert(
+    ICON_OPTIONS.map((icon) => ({
+      key: icon.id,
+      name: icon.label,
+      icon_url: icon.src,
+      is_builtin: true,
+      updated_at: new Date().toISOString(),
+    })),
+    { onConflict: 'key' },
+  )
+  if (iconError) {
+    console.warn('Technology icon library was not seeded. Run the latest migration first:', iconError.message)
+  }
 
   await supabase.from('project_images').delete().neq('id', '00000000-0000-0000-0000-000000000000')
   await supabase.from('project_stack').delete().neq('id', '00000000-0000-0000-0000-000000000000')
