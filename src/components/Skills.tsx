@@ -20,7 +20,7 @@ export function Skills({ groups }: { groups: SkillGroup[] }) {
               <ul className="skill-tools">
                 {group.items.map((item) => (
                   <li key={item.id}>
-                    <TechIcon id={item.icon_id || item.id} title={item.name} />
+                    <TechIcon id={item.icon_id || item.id} title={item.name} src={item.icon_url} />
                     <span>{item.name}</span>
                   </li>
                 ))}

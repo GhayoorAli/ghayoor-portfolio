@@ -1082,10 +1082,33 @@ button {
   letter-spacing: -0.03em;
 }
 
-.project-hook {
-  margin: 8px 0 0;
+.project-card-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-card-stack li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   color: var(--muted);
-  line-height: 1.6;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.project-card-stack .stack-tool-icon,
+.project-card-stack .stack-tool-fallback {
+  width: 20px;
+  height: 20px;
+}
+
+.project-card-stack .stack-tool-fallback {
+  border-radius: 5px;
+  font-size: 0.66rem;
 }
 
 .process-list {

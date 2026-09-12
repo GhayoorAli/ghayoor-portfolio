@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import type { Project } from '@/types/content'
 import { Reveal } from './Reveal'
+import { TechIcon } from './TechIcon'
 
 export function Projects({ projects }: { projects: Project[] }) {
   return (
@@ -31,7 +32,16 @@ export function Projects({ projects }: { projects: Project[] }) {
                   <div className="project-body">
                     <h3>{project.name}</h3>
                     <p className="project-tag">{project.tag}</p>
-                    <p className="project-hook">{project.hook}</p>
+                    {project.stack.length > 0 ? (
+                      <ul className="project-card-stack" aria-label={`${project.name} technology stack`}>
+                        {project.stack.map((item) => (
+                          <li key={`${project.slug}-${item.id}-${item.name}`}>
+                            <TechIcon id={item.id} title={item.name} src={item.icon_url} />
+                            <span>{item.name}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 </Link>
               </motion.div>

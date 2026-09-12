@@ -1,7 +1,7 @@
 import { SkillsAdminForm } from '@/components/admin/SkillsAdminForm'
-import { getPortfolioContent } from '@/lib/content'
+import { getPortfolioContent, getTechnologyIcons } from '@/lib/content'
 
 export default async function AdminSkillsPage() {
-  const content = await getPortfolioContent()
-  return <SkillsAdminForm initialGroups={content.skillGroups} />
+  const [content, icons] = await Promise.all([getPortfolioContent(), getTechnologyIcons()])
+  return <SkillsAdminForm initialGroups={content.skillGroups} initialIcons={icons} />
 }

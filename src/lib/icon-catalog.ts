@@ -2,6 +2,11 @@ export type IconOption = {
   id: string
   label: string
   src: string
+  isBuiltIn?: boolean
+}
+
+export function normalizeIconName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, '')
 }
 
 /** Icons available under /public/icons — used by Skills & Project stack pickers. */
@@ -28,6 +33,7 @@ export const ICON_OPTIONS: IconOption[] = [
   { id: 'postgresql', label: 'PostgreSQL', src: '/icons/postgresql.svg' },
   { id: 'mongodb', label: 'MongoDB', src: '/icons/mongodb.svg' },
   { id: 'redis', label: 'Redis', src: '/icons/redis.svg' },
+  { id: 'supabase', label: 'Supabase', src: '/icons/supabase.svg' },
   { id: 'restapi', label: 'REST API', src: '/icons/restapi.svg' },
   { id: 'json', label: 'JSON', src: '/icons/json.svg' },
   { id: 'xml', label: 'XML', src: '/icons/xml.svg' },
@@ -55,6 +61,21 @@ export const ICON_BY_ID = Object.fromEntries(ICON_OPTIONS.map((o) => [o.id, o]))
   IconOption
 >
 
+export function mergeIconOptions(custom: IconOption[]) {
+  const merged = new Map<string, IconOption>()
+  for (const option of ICON_OPTIONS) merged.set(option.id, { ...option, isBuiltIn: true })
+  for (const option of custom) merged.set(option.id, option)
+  return [...merged.values()].sort((a, b) => a.label.localeCompare(b.label))
+}
+
+export function findIconByName(name: string, options: IconOption[]) {
+  const normalized = normalizeIconName(name)
+  return options.find(
+    (option) =>
+      normalizeIconName(option.id) === normalized || normalizeIconName(option.label) === normalized,
+  )
+}
+
 export const TECH_TAG_SUGGESTIONS = [
   'PHP',
   'Laravel',
@@ -73,6 +94,7 @@ export const TECH_TAG_SUGGESTIONS = [
   'Docker',
   'AWS',
   'PostgreSQL',
+  'Supabase',
   'Node.js',
   'REST API',
 ]

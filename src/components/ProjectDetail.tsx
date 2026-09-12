@@ -44,36 +44,44 @@ export function ProjectDetail({ project }: { project: Project }) {
           <img src={project.cover} alt={`${project.name} cover`} />
         </figure>
 
-        <section className="project-section">
-          <h2>The problem</h2>
-          <p>{project.problem}</p>
-        </section>
+        {project.problem ? (
+          <section className="project-section">
+            <h2>The problem</h2>
+            <p>{project.problem}</p>
+          </section>
+        ) : null}
 
-        <section className="project-section">
-          <h2>My role</h2>
-          <p>{project.role}</p>
-        </section>
+        {project.role ? (
+          <section className="project-section">
+            <h2>My role</h2>
+            <p>{project.role}</p>
+          </section>
+        ) : null}
 
-        <section className="project-section">
-          <h2>Tech stack</h2>
-          <ul className="project-page-stack">
-            {project.stack.map((item) => (
-              <li key={`${item.id}-${item.name}`}>
-                <TechIcon id={item.id} title={item.name} />
-                <span>{item.name}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        {project.stack.length > 0 ? (
+          <section className="project-section">
+            <h2>Tech stack</h2>
+            <ul className="project-page-stack">
+              {project.stack.map((item) => (
+                <li key={`${item.id}-${item.name}`}>
+                <TechIcon id={item.id} title={item.name} src={item.icon_url} />
+                  <span>{item.name}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
-        <section className="project-section">
-          <h2>What I built</h2>
-          <ul className="project-bullets">
-            {project.features.map((feature) => (
-              <li key={feature}>{feature}</li>
-            ))}
-          </ul>
-        </section>
+        {project.features.length > 0 ? (
+          <section className="project-section">
+            <h2>Features</h2>
+            <ul className="project-bullets">
+              {project.features.map((feature) => (
+                <li key={feature}>{feature}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {project.architecture ? (
           <section className="project-section">
@@ -89,22 +97,24 @@ export function ProjectDetail({ project }: { project: Project }) {
           </section>
         ) : null}
 
-        <section className="project-section">
-          <h2>Challenges & solutions</h2>
-          <div className="project-challenge-list">
-            {project.challenges.map((item) => (
-              <article key={item.title} className="project-challenge">
-                <h3>{item.title}</h3>
-                <p>
-                  <strong>Challenge:</strong> {item.problem}
-                </p>
-                <p>
-                  <strong>Solution:</strong> {item.solution}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
+        {project.challenges.length > 0 ? (
+          <section className="project-section">
+            <h2>Challenges & solutions</h2>
+            <div className="project-challenge-list">
+              {project.challenges.map((item) => (
+                <article key={item.title || item.problem} className="project-challenge">
+                  <h3>{item.title}</h3>
+                  <p>
+                    <strong>Challenge:</strong> {item.problem}
+                  </p>
+                  <p>
+                    <strong>Solution:</strong> {item.solution}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {project.gallery.length > 0 ? (
           <section className="project-section">

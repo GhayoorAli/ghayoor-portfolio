@@ -3,12 +3,19 @@
 import { useState } from 'react'
 import { revalidatePortfolio } from '@/app/admin/actions'
 import { IconSelect } from '@/components/admin/IconSelect'
-import { ICON_BY_ID } from '@/lib/icon-catalog'
+import { ICON_BY_ID, type IconOption } from '@/lib/icon-catalog'
 import { createClient } from '@/lib/supabase/client'
 import type { SkillGroup } from '@/types/content'
 
-export function SkillsAdminForm({ initialGroups }: { initialGroups: SkillGroup[] }) {
+export function SkillsAdminForm({
+  initialGroups,
+  initialIcons,
+}: {
+  initialGroups: SkillGroup[]
+  initialIcons: IconOption[]
+}) {
   const [groups, setGroups] = useState(initialGroups)
+  const [icons, setIcons] = useState(initialIcons)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -146,6 +153,14 @@ export function SkillsAdminForm({ initialGroups }: { initialGroups: SkillGroup[]
                 <div className="admin-skill-row" key={item.id}>
                   <IconSelect
                     value={item.icon_id}
+                    options={icons}
+                    onIconCreated={(icon) =>
+                      setIcons((previous) =>
+                        [...previous.filter((item) => item.id !== icon.id), icon].sort((a, b) =>
+                          a.label.localeCompare(b.label),
+                        ),
+                      )
+                    }
                     onChange={(iconId, label) =>
                       setGroups((prev) =>
                         prev.map((g, i) =>

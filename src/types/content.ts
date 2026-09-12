@@ -22,7 +22,7 @@ export type SiteSettings = {
   portrait_url: string
 }
 
-export type SkillItem = { id: string; name: string; icon_id: string }
+export type SkillItem = { id: string; name: string; icon_id: string; icon_url?: string }
 export type SkillGroup = { id?: string; category: string; sort_order: number; items: SkillItem[] }
 
 export type ProjectChallenge = {
@@ -31,7 +31,7 @@ export type ProjectChallenge = {
   solution: string
 }
 
-export type ProjectStackItem = { id: string; name: string }
+export type ProjectStackItem = { id: string; name: string; icon_url?: string }
 
 export type Project = {
   id?: string
@@ -51,6 +51,7 @@ export type Project = {
   links: { live: string | null; github: string | null }
   gallery: string[]
   results?: string | null
+  readme?: string
   sort_order?: number
   is_published?: boolean
 }
