@@ -1,3 +1,4 @@
+import { decodeExperienceDetails, normalizeExperience } from '@/lib/experience-content'
 import { getFallbackContent } from '@/lib/fallback-content'
 import { ICON_OPTIONS, mergeIconOptions, type IconOption } from '@/lib/icon-catalog'
 import { applyReadmeToProject } from '@/lib/project-readme'
@@ -155,17 +156,16 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
       return row.readme ? applyReadmeToProject(project, row.readme, technologyIcons) : project
     })
 
-    const experience: ExperienceItem[] = (experienceRes.data ?? []).map((row) => ({
-      id: row.id,
-      role: row.role,
-      company: row.company,
-      period: row.period,
-      location: row.location,
-      stack: row.stack ?? [],
-      summary: row.summary,
-      points: row.points ?? [],
-      sort_order: row.sort_order,
-    }))
+    const experience: ExperienceItem[] = experienceRes.error
+      ? getFallbackContent().experience
+      : (experienceRes.data ?? []).map(row => {
+        const details = decodeExperienceDetails(row.points)
+        return normalizeExperience({
+          id: row.id, role: row.role, company: row.company, period: row.period,
+          location: row.location, stack: row.stack ?? [], summary: row.summary,
+          ...details, sort_order: row.sort_order,
+        }, getFallbackContent().experience)
+      })
 
     const education: EducationItem[] = (educationRes.data ?? []).map((row) => ({
       id: row.id,

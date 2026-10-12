@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { getFallbackContent } from '../src/lib/fallback-content'
+import { encodeExperienceDetails } from '../src/lib/experience-content'
 import { ICON_OPTIONS } from '../src/lib/icon-catalog'
 
 function loadEnvFile(filename: string) {
@@ -171,7 +172,7 @@ async function main() {
       location: item.location,
       stack: item.stack,
       summary: item.summary,
-      points: item.points,
+      points: encodeExperienceDetails(item),
       sort_order: index,
     })),
   )

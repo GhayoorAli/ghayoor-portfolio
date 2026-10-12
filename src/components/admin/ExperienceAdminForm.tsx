@@ -5,10 +5,12 @@ import { revalidatePortfolio } from '@/app/admin/actions'
 import { LineListEditor } from '@/components/admin/LineListEditor'
 import { TagInput } from '@/components/admin/TagInput'
 import { createClient } from '@/lib/supabase/client'
+import { encodeExperienceDetails, normalizeExperience } from '@/lib/experience-content'
 import type { ExperienceItem } from '@/types/content'
 
-export function ExperienceAdminForm({ initial }: { initial: ExperienceItem[] }) {
+export function ExperienceAdminForm({ initial, profiles = [] }: { initial: ExperienceItem[]; profiles?: ExperienceItem[] }) {
   const [items, setItems] = useState(initial)
+  const [savedIds, setSavedIds] = useState(initial.flatMap(item => item.id ? [item.id] : []))
   const [openIndex, setOpenIndex] = useState(0)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -20,22 +22,24 @@ export function ExperienceAdminForm({ initial }: { initial: ExperienceItem[] }) 
     setError('')
     try {
       const supabase = createClient()
-      await supabase.from('experience').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      if (items.length) {
-        const { error: insertError } = await supabase.from('experience').insert(
-          items.map((item, index) => ({
-            role: item.role,
-            company: item.company,
-            period: item.period,
-            location: item.location,
-            stack: item.stack,
-            summary: item.summary,
-            points: item.points,
-            sort_order: index,
-          })),
-        )
-        if (insertError) throw insertError
+      if (items.some(item => !item.role.trim() || !item.company.trim())) throw new Error('Add a role title and company before saving.')
+      const rows = items.map(item => ({ ...normalizeExperience(item, profiles), id: item.id || crypto.randomUUID() }))
+      if (rows.length) {
+        const { error: saveError } = await supabase.from('experience').upsert(rows.map((item, index) => ({
+          id: item.id, role: item.role.trim(), company: item.company.trim(), period: item.period,
+          location: item.location, stack: item.stack, summary: item.summary,
+          points: encodeExperienceDetails(item), sort_order: index,
+        })))
+        if (saveError) throw saveError
       }
+      setItems(rows)
+      setSavedIds([...new Set([...savedIds, ...rows.map(item => item.id)])])
+      const removed = savedIds.filter(id => !rows.some(row => row.id === id))
+      if (removed.length) {
+        const { error: deleteError } = await supabase.from('experience').delete().in('id', removed)
+        if (deleteError) throw deleteError
+      }
+      setSavedIds(rows.map(item => item.id))
       await revalidatePortfolio()
       setMessage('Experience saved.')
     } catch (err) {
@@ -65,7 +69,7 @@ export function ExperienceAdminForm({ initial }: { initial: ExperienceItem[] }) 
       <header className="admin-page-header">
         <div>
           <h1>Experience</h1>
-          <p className="admin-lead">Timeline roles, tech tags, and highlight bullets.</p>
+          <p className="admin-lead">Short timeline introductions and detailed responsibilities for Read more.</p>
         </div>
         <div className="admin-page-actions">
           <button
@@ -75,7 +79,7 @@ export function ExperienceAdminForm({ initial }: { initial: ExperienceItem[] }) 
               setItems((prev) => [
                 ...prev,
                 {
-                  role: 'New role',
+                  role: '',
                   company: '',
                   period: '',
                   location: '',
@@ -153,7 +157,7 @@ export function ExperienceAdminForm({ initial }: { initial: ExperienceItem[] }) 
                   <div className="admin-grid two">
                     <div className="admin-field">
                       <label>Role</label>
-                      <input value={item.role} onChange={(e) => patch(index, { role: e.target.value })} />
+                      <input placeholder="Full Stack Developer" value={item.role} onChange={(e) => patch(index, { role: e.target.value })} />
                     </div>
                     <div className="admin-field">
                       <label>Company</label>
@@ -170,6 +174,8 @@ export function ExperienceAdminForm({ initial }: { initial: ExperienceItem[] }) 
                         onChange={(e) => patch(index, { period: e.target.value })}
                       />
                     </div>
+                    <div className="admin-field"><label>Employment type</label><input placeholder="Full-time, Work Study, Independent work" value={item.employment_type || ''} onChange={e => patch(index, { employment_type: e.target.value })} /></div>
+                    <div className="admin-field"><label>Duration</label><input placeholder="4 yrs, 4 mos" value={item.duration || ''} onChange={e => patch(index, { duration: e.target.value })} /></div>
                     <div className="admin-field">
                       <label>Location</label>
                       <input
@@ -186,22 +192,26 @@ export function ExperienceAdminForm({ initial }: { initial: ExperienceItem[] }) 
                   </div>
 
                   <div className="admin-field" style={{ marginTop: 14 }}>
-                    <label>Summary</label>
+                    <label>Timeline summary</label><p className="admin-lead">A short introduction for the card. Put detailed responsibilities below.</p>
                     <textarea
                       rows={3}
+                      placeholder="Delivered production web applications and websites for clients…"
                       value={item.summary}
                       onChange={(e) => patch(index, { summary: e.target.value })}
                     />
+                    {item.summary.length > 280 && <p className="admin-lead">Long summaries will move into Read more when you save, so the timeline card stays compact.</p>}
                   </div>
 
                   <div className="admin-field" style={{ marginTop: 14 }}>
-                    <label>Highlights</label>
-                    <LineListEditor
+                    <label>Read more responsibilities</label>
+                    {!item.sections?.length && <LineListEditor
                       values={item.points}
                       onChange={(points) => patch(index, { points })}
                       placeholder="Add a highlight bullet"
                       addLabel="Add"
-                    />
+                    />}
+                    {(item.sections || []).map((section, sectionIndex) => <section className="admin-card" key={sectionIndex} style={{ marginTop: 12 }}><div className="admin-field"><label>Group heading</label><input placeholder="Laravel & PHP" value={section.title} onChange={e => { const sections = item.sections!.map((group, i) => i === sectionIndex ? { ...group, title: e.target.value } : group); patch(index, { sections, points: sections.flatMap(group => group.points) }) }} /></div><LineListEditor values={section.points} placeholder="Add a responsibility" onChange={points => { const sections = item.sections!.map((group, i) => i === sectionIndex ? { ...group, points } : group); patch(index, { sections, points: sections.flatMap(group => group.points) }) }} /><button className="admin-btn secondary" type="button" onClick={() => { const sections = item.sections!.filter((_, i) => i !== sectionIndex); patch(index, { sections, points: sections.flatMap(group => group.points) }) }}>Remove group</button></section>)}
+                    <button className="admin-btn secondary" type="button" style={{ marginTop: 12 }} onClick={() => { const sections = item.sections?.length ? [...item.sections, { title: '', points: [] }] : [{ title: 'Responsibilities', points: [...item.points] }]; patch(index, { sections }) }}>Add responsibility group</button>
                   </div>
                 </div>
               ) : null}
