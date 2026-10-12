@@ -22,7 +22,7 @@ export function getFallbackContent(): PortfolioContent {
       about_kicker: about.kicker,
       about_heading: about.heading,
       about_body: [...about.body],
-      portrait_url: '/images/portrait.webp',
+      portrait_url: '/images/portrait-side-pose.png',
     },
     socials: [
       {

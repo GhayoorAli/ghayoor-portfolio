@@ -1,6 +1,4 @@
 import { notFound } from 'next/navigation'
-import { Footer } from '@/components/Footer'
-import { Navbar } from '@/components/Navbar'
 import { ProjectDetail } from '@/components/ProjectDetail'
 import { ProjectPageClient } from '@/components/ProjectPageClient'
 import { getPortfolioContent, getProjectBySlug } from '@/lib/content'
@@ -21,13 +19,12 @@ export default async function WorkProjectPage({
   const [project, content] = await Promise.all([getProjectBySlug(slug), getPortfolioContent()])
   if (!project) notFound()
 
-  const brand = content.site.name.split(' ').filter(Boolean).slice(-1)[0] || content.site.name
+  const index = content.projects.findIndex(item => item.slug === project.slug)
+  const nextProject = content.projects.length > 1 ? content.projects[(index + 1) % content.projects.length] : undefined
 
   return (
     <ProjectPageClient>
-      <Navbar brand={brand} email={content.site.email} socials={content.socials} />
-      <ProjectDetail project={project} />
-      <Footer name={content.site.name} email={content.site.email} socials={content.socials} />
+      <ProjectDetail project={project} site={content.site} socials={content.socials} nextProject={nextProject} />
     </ProjectPageClient>
   )
 }

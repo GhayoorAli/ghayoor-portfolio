@@ -57,6 +57,9 @@ export type Project = {
 }
 
 export type ExperienceItem = {
+  employment_type?: string
+  duration?: string
+  sections?: { title: string; points: string[] }[]
   id?: string
   role: string
   company: string

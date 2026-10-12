@@ -31,6 +31,7 @@ export function ProjectPageClient({ children }: { children: ReactNode }) {
         wheelMultiplier: 1,
         touchMultiplier: 1.15,
         syncTouch: false,
+        anchors: { offset: -88, duration: 1 },
       }}
     >
       {body}

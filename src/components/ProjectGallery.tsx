@@ -1,7 +1,8 @@
 'use client'
 
 import { AnimatePresence, motion, wrap } from 'framer-motion'
-import { useEffect, useState, type KeyboardEvent } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
+import { useImageResolution } from './useImageResolution'
 
 type ProjectGalleryProps = {
   images: string[]
@@ -11,6 +12,8 @@ type ProjectGalleryProps = {
 export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
   const [[page, direction], setPage] = useState([0, 0])
   const index = wrap(0, images.length, page)
+  const imageRef = useRef<HTMLImageElement>(null)
+  const imageSize = useImageResolution(images[index] || '', imageRef)
 
   const paginate = (dir: number) => {
     setPage(([current]) => [current + dir, dir])
@@ -19,10 +22,6 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
   const goTo = (next: number) => {
     setPage(([current]) => [next, next > current ? 1 : -1])
   }
-
-  useEffect(() => {
-    setPage([0, 0])
-  }, [images])
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'ArrowRight') {
@@ -46,7 +45,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
       aria-label={`${projectName} screenshots`}
       onKeyDown={onKeyDown}
     >
-      <div className="project-carousel-stage">
+      <div className="project-carousel-stage" style={{ maxWidth: imageSize.width, aspectRatio: imageSize.ratio }}>
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.figure
             key={page}
@@ -56,7 +55,6 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
               enter: (dir: number) => ({
                 x: dir > 0 ? 48 : -48,
                 opacity: 0,
-                scale: 0.985,
               }),
               center: {
                 x: 0,
@@ -66,7 +64,6 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
               exit: (dir: number) => ({
                 x: dir < 0 ? 48 : -48,
                 opacity: 0,
-                scale: 0.985,
               }),
             }}
             initial="enter"
@@ -81,7 +78,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
               else if (info.offset.x > 64 || info.velocity.x > 400) paginate(-1)
             }}
           >
-            <img src={images[index]} alt={`${projectName} screenshot ${index + 1} of ${images.length}`} />
+            <img draggable={false} src={images[index]} ref={imageRef} alt={`${projectName} screenshot ${index + 1} of ${images.length}`} />
           </motion.figure>
         </AnimatePresence>
 
@@ -111,6 +108,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
         <p className="project-carousel-count">
           {index + 1} <span>/ {images.length}</span>
         </p>
+        <a className="ref-gallery-original" href={images[index]} target="_blank" rel="noopener noreferrer">View full-size ↗</a>
         {images.length > 1 ? (
           <div className="project-carousel-dots" role="tablist" aria-label="Screenshot slides">
             {images.map((src, i) => (

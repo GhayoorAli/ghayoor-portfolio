@@ -1,0 +1,5 @@
+Mode: built-in imagegen edit, transparent background.
+Edit target: public/images/portrait.webp
+Saved asset: public/images/portrait-side-pose.png
+
+Use case: identity-preserve. Edit target: the supplied portrait of the portfolio owner. Create a realistic transparent-background cutout for a portfolio hero. Preserve this exact man's identity, face, skin tone, hairstyle, beard, age, dark charcoal button-up shirt, expression, and natural proportions. Change only the pose: turn his torso about 20 degrees into a relaxed three-quarter side pose, with one shoulder closer to camera, head still looking at the viewer, and a subtle natural 6-degree head tilt. This should feel like a slightly angled professional portrait, not a full side profile. Keep his gentle closed-mouth smile. Waist-up framing, centered, entire hair and both shoulders visible, arms extend naturally to bottom edge. Clean realistic photographic texture, soft natural lighting. Genuinely transparent alpha background; no checkerboard or stripes printed into the image, no text, no graphics, no props. Do not change the facial features or clothing.

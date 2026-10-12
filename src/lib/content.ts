@@ -70,7 +70,7 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
       about_kicker: settings.about_kicker,
       about_heading: settings.about_heading,
       about_body: settings.about_body ?? [],
-      portrait_url: settings.portrait_url || '/images/portrait.webp',
+      portrait_url: settings.portrait_url && settings.portrait_url !== '/images/portrait.webp' ? settings.portrait_url : '/images/portrait-side-pose.png',
     }
 
     const socials: SocialLink[] = (socialsRes.data ?? []).map((row) => ({

@@ -106,55 +106,68 @@ export const stackGroups = [
 
 export const experience = [
   {
-    role: 'Full Stack Web Developer (Working Student)',
+    role: 'Full Stack Developer',
+    company: 'Personal projects',
+    employment_type: 'Independent work',
+    period: 'Mar 2026 — Present',
+    location: '',
+    stack: ['Laravel', 'PHP', 'React', 'Next.js', 'TypeScript', 'MySQL', 'Docker'],
+    summary: 'Building and refining personal projects, working end to end from backend services and APIs to frontend interfaces and deployment.',
+    sections: [{ title: 'Personal Projects', points: ['Building personal full-stack products and adding them to my portfolio.', 'Developing and refining projects such as MeetMe and Meridian.', 'Taking ideas through implementation, testing and deployment.'] }],
+  },
+  {
+    role: 'Full Stack Developer',
     company: 'Bär Softwareentwicklung UG',
+    employment_type: 'Work Study',
+    duration: '4 mos',
     period: 'Oct 2025 — Jan 2026',
-    location: 'Frankfurt am Main, Germany (Remote)',
-    stack: ['PHP', 'MySQL', 'JavaScript', 'React', 'HTML/CSS', 'Git', 'Jira', 'PhpStorm'],
-    summary:
-      'Working across the full stack to evolve a legacy application — building backend features in PHP while developing React-based frontend components — with a focus on system stability, usability, and maintainability.',
-    points: [
-      'Designed and implemented backend features in PHP, extending core business logic and ensuring seamless integration with React-driven frontend components.',
-      'Built and enhanced interactive UI components using React, JavaScript, HTML, and CSS, improving usability, responsiveness, and overall user experience.',
-      'Modernized legacy code by applying PSR standards and clean code principles across both backend architecture and frontend structure.',
-      'Reduced technical debt and regression risk through structured refactoring and active Pull Request reviews spanning full-stack changes.',
-      'Delivered end-to-end features independently within an agile Kanban workflow (Jira), owning tasks from backend logic through React UI implementation.',
-      'Maintained clean Git branching strategies to support stable, low-risk deployments across the stack.',
+    location: 'Frankfurt am Main, Hesse, Germany · Remote',
+    stack: ['PHP', 'Laravel', 'MySQL', 'HTML', 'CSS', 'JavaScript', 'Vue.js', 'React', 'PHPUnit', 'Git', 'Jira'],
+    summary: 'Worked on a production PHP application, modernizing the codebase and shipping new features across backend and frontend in an agile team.',
+    sections: [
+      { title: 'PHP & Laravel', points: [
+        'Refactored legacy PHP code to PSR-12 coding standards across modules/files, making the codebase more consistent, readable and easier to review.',
+        'Built new backend features in PHP Laravel to support new customer workflows, reporting, user management.',
+        'Improved application stability by fixing bugs / adding validation and error handling / writing tests with PHPUnit.',
+        'Worked with MySQL to design tables / optimize queries / write migrations for new features.',
+      ] },
+      { title: 'HTML / CSS / JavaScript / Vue.js / React', points: ['Enhanced frontend components in HTML / CSS / JavaScript / Vue.js / React for a smoother, more consistent user experience.'] },
+      { title: 'Collaboration', points: ['Worked with Git-based workflows, code reviews and Jira / sprint planning alongside developers.'] },
     ],
   },
   {
-    role: 'Full Stack Web Developer',
+    role: 'Full Stack Developer',
     company: 'Lixup',
+    employment_type: 'Full-time',
+    duration: '4 yrs',
     period: 'Jan 2021 — Dec 2024',
-    location: 'United Kingdom',
-    stack: [
-      'Laravel',
-      'Magento 2',
-      'WordPress',
-      'PHP',
-      'MySQL',
-      'JavaScript',
-      'React',
-      'Next.js',
-      'HTML/CSS',
-      'REST/SOAP APIs',
-      'GitHub',
-      'Jira',
-    ],
-    summary:
-      'Owned full-stack delivery across 12+ production web applications — architecting backend systems in Laravel, Magento 2, and WordPress while building React and Next.js-powered frontend experiences on top of them.',
-    points: [
-      'Delivered 12+ production-grade web applications end-to-end — architecting backend systems across Laravel, Magento 2, and WordPress, and building responsive frontends with React, Next.js and Vue.js.',
-      'Designed custom backend architectures and paired them with dynamic, component-based frontend interfaces tailored to complex business requirements.',
-      'Designed and integrated complex external API services across key business systems, ensuring reliability through robust logging and error handling.',
-      'Improved full application performance by up to 50% through backend optimization, MySQL query tuning, and efficient React component rendering.',
-      'Built reusable React/Next.js components to connect server-side logic with dynamic, data-driven user interfaces.',
-      'Managed source control via GitHub and led structured PR reviews covering both backend and frontend code quality.',
-      'Authored full-stack technical documentation, architecture workflows, and delivery timelines in Jira.',
-      'Mentored junior developers on both backend and frontend best practices through code reviews and pair programming.',
+    location: 'Pakistan · On-site',
+    stack: ['Laravel', 'PHP', 'MySQL', 'Redis', 'React', 'Next.js', 'Vue.js', 'TypeScript', 'Tailwind CSS', 'Node.js', 'Express', 'PostgreSQL', 'WordPress', 'WooCommerce', 'React Native'],
+    summary: 'Delivered production web applications and websites for clients, working across Laravel, React/Next.js, Node.js and WordPress.',
+    sections: [
+      { title: 'Laravel & PHP', points: [
+        'Built and maintained Laravel (PHP) applications, including booking systems, admin dashboards, e-commerce backends, with MySQL and Redis.',
+        'Designed REST APIs in Laravel, using Eloquent, migrations, queues and authentication, serving React and Vue frontends.',
+        'Integrated third-party services such as payment gateways / shipping / CRM / email with robust error handling and retry logic.',
+        'Improved backend performance by up to 50% through query optimization, indexing and Redis caching.',
+      ] },
+      { title: 'React, Next.js & Vue.js', points: [
+        'Built responsive, component-based interfaces in React, Next.js and Vue.js with TypeScript and Tailwind CSS.',
+        'Improved React rendering performance with memoization, code splitting and lazy loading.',
+        'Connected frontends to Laravel and Node.js APIs, handling state management, forms and authentication flows.',
+      ] },
+      { title: 'Node.js', points: ['Built REST APIs and backend services with Node.js/Express on PostgreSQL.'] },
+      { title: 'WordPress', points: [
+        'Built custom WordPress themes and plugins in PHP, including WooCommerce stores / custom post types / ACF-based page builders.',
+        'Maintained and optimized client WordPress sites for speed, security and SEO.',
+      ] },
+      { title: 'Mobile & Delivery', points: [
+        'Built cross-platform React Native apps.',
+        'Took features from client requirements to deployment, collaborating with designers, project managers and developers.',
+      ] },
     ],
   },
-]
+].map(item => ({ ...item, points: item.sections.flatMap(section => section.points) }))
 
 export type ProjectStackItem = { id: string; name: string }
 
@@ -188,7 +201,7 @@ export const projects: Project[] = [
     slug: 'meet-me',
     name: 'MeetMe',
     hook: 'A self-hosted video meeting platform — a lightweight Google Meet alternative with waiting rooms, guest hosting, collaborative tools, and host-controlled permissions.',
-    cover: '/projects/meet-me/01-home.png',
+    cover: '/projects/meet-me/01-home-hires.png',
     tag: 'Video platform',
     year: '2025',
     problem:
@@ -297,7 +310,7 @@ export const projects: Project[] = [
       github: null,
     },
     gallery: [
-      '/projects/meet-me/01-home.png',
+      '/projects/meet-me/01-home-hires.png',
       '/projects/meet-me/03-guest-start.png',
       '/projects/meet-me/02-signin.png',
       '/projects/meet-me/04-meeting-room.png',
