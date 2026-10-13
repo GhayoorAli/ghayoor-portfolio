@@ -45,7 +45,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
       aria-label={`${projectName} screenshots`}
       onKeyDown={onKeyDown}
     >
-      <div className="project-carousel-stage" style={{ maxWidth: imageSize.width, aspectRatio: imageSize.ratio }}>
+      <div className="project-carousel-stage"><span className="case-gallery-label">{projectName} / Interface {String(index + 1).padStart(2, '0')}</span>
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.figure
             key={page}
@@ -78,7 +78,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
               else if (info.offset.x > 64 || info.velocity.x > 400) paginate(-1)
             }}
           >
-            <img draggable={false} src={images[index]} ref={imageRef} alt={`${projectName} screenshot ${index + 1} of ${images.length}`} />
+            <img draggable={false} style={{ maxWidth: imageSize.width ? `min(100%, ${imageSize.width}px)` : '100%' }} src={images[index]} ref={imageRef} alt={`${projectName} screenshot ${index + 1} of ${images.length}`} />
           </motion.figure>
         </AnimatePresence>
 
@@ -106,9 +106,8 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
 
       <div className="project-carousel-meta">
         <p className="project-carousel-count">
-          {index + 1} <span>/ {images.length}</span>
+          {String(index + 1).padStart(2, '0')} <span>/ {String(images.length).padStart(2, '0')}</span>
         </p>
-        <a className="ref-gallery-original" href={images[index]} target="_blank" rel="noopener noreferrer">View full-size ↗</a>
         {images.length > 1 ? (
           <div className="project-carousel-dots" role="tablist" aria-label="Screenshot slides">
             {images.map((src, i) => (
@@ -127,16 +126,17 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
       </div>
 
       {images.length > 1 ? (
-        <div className="project-carousel-thumbs" aria-hidden="true">
+        <div className="project-carousel-thumbs" role="group" aria-label="Screenshot thumbnails">
           {images.map((src, i) => (
             <button
               key={src}
               type="button"
               className={`project-carousel-thumb${i === index ? ' is-active' : ''}`}
               onClick={() => goTo(i)}
-              tabIndex={-1}
+              aria-label={`View screenshot ${i + 1}`}
+              aria-pressed={i === index}
             >
-              <img src={src} alt="" />
+              <img src={src} alt="" /><span>{String(i + 1).padStart(2, '0')}</span>
             </button>
           ))}
         </div>

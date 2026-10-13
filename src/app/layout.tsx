@@ -3,6 +3,7 @@ import { Archivo, DM_Sans, Geist_Mono } from 'next/font/google'
 import 'lenis/dist/lenis.css'
 import './globals.css'
 import './reference.css'
+import './project-detail.css'
 
 const archivo = Archivo({
   subsets: ['latin'],
