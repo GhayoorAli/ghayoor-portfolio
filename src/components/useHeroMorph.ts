@@ -2,6 +2,36 @@
 
 import { useEffect } from 'react'
 
+// Keep the floating cards clear of the menu without moving the hero itself.
+function layoutHeroCards(page: HTMLElement) {
+  const badges = page.querySelector<HTMLElement>('.ref-hero-badges')
+  const traits = page.querySelector<HTMLElement>('.ref-traits')
+  const nav = page.querySelector<HTMLElement>('.ref-hero-nav')
+  if (!badges || !traits || !nav) return
+  badges.style.removeProperty('translate')
+  traits.style.removeProperty('translate')
+  delete badges.dataset.menuClearance
+  if (!matchMedia('(min-width: 901px)').matches) return
+
+  const menu = nav.getBoundingClientRect()
+  const gap = 16
+  const top = menu.bottom + gap
+  const bottom = window.innerHeight - Math.max(gap, window.innerWidth * .0278)
+  let badgesBox = badges.getBoundingClientRect()
+  // Keep both statistics together, in their original order, below the menu.
+  if (badgesBox.top < top) {
+    if (top + badgesBox.height > bottom) {
+      badges.dataset.menuClearance = 'compact'
+      badgesBox = badges.getBoundingClientRect()
+    }
+    badges.style.translate = `0 ${top - badgesBox.top}px`
+  }
+  const traitsBox = traits.getBoundingClientRect()
+  if (traitsBox.top < top && traitsBox.bottom > menu.top - gap) {
+    traits.style.translate = `0 ${top - traitsBox.top}px`
+  }
+}
+
 export function useHeroMorph(root: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const page = root.current
@@ -12,6 +42,7 @@ export function useHeroMorph(root: React.RefObject<HTMLDivElement | null>) {
     const measure = () => {
       pairs.forEach(({ source, target }) => { source.style.transform = ''; source.style.opacity = ''; source.style.pointerEvents = ''; target.style.opacity = ''; const sourceControl = source.closest<HTMLElement>('a,button'); const targetControl = target.closest<HTMLElement>('a,button'); if (sourceControl) { sourceControl.tabIndex = 0; sourceControl.style.pointerEvents = '' }; if (targetControl) targetControl.tabIndex = 0 })
       pairs = []
+      layoutHeroCards(page)
       if (!media.matches) { page.style.removeProperty('--morph'); const sidebar = page.querySelector<HTMLElement>('.ref-sidebar'); if (sidebar) { sidebar.inert = false; sidebar.style.pointerEvents = '' }; return }
       page.querySelectorAll<HTMLElement>('[data-morph]').forEach(source => {
         const target = page.querySelector<HTMLElement>(`[data-destination="${source.dataset.morph}"]`)

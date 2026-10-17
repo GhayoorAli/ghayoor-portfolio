@@ -1,7 +1,7 @@
+import { getDefaultFAQs, validateFAQs } from '@/lib/faq-content'
 import { decodeExperienceDetails, normalizeExperience } from '@/lib/experience-content'
 import { getFallbackContent } from '@/lib/fallback-content'
 import { ICON_OPTIONS, mergeIconOptions, type IconOption } from '@/lib/icon-catalog'
-import { applyReadmeToProject } from '@/lib/project-readme'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import { createPublicClient } from '@/lib/supabase/public'
 import { createClient as createAuthClient } from '@/lib/supabase/server'
@@ -46,7 +46,7 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
       supabase.from('skill_groups').select('*').order('sort_order'),
       supabase.from('skills').select('*').order('sort_order'),
       supabase.from('technology_icons').select('*').order('name'),
-      supabase.from('projects').select('*').eq('is_published', true).order('sort_order'),
+      supabase.from('projects').select('*').eq('is_published', true).order('sort_order').order('id'),
       supabase.from('project_stack').select('*').order('sort_order'),
       supabase.from('project_images').select('*').order('sort_order'),
       supabase.from('experience').select('*').order('sort_order'),
@@ -153,7 +153,7 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
         sort_order: row.sort_order,
         is_published: row.is_published,
       }
-      return row.readme ? applyReadmeToProject(project, row.readme, technologyIcons) : project
+      return project
     })
 
     const experience: ExperienceItem[] = experienceRes.error
@@ -197,7 +197,14 @@ export async function getPortfolioContent(): Promise<PortfolioContent> {
           }))
         : getFallbackContent().workflow
 
+    let faqs = getDefaultFAQs(site, workflow)
+    if (settings.faqs != null) {
+      try { faqs = validateFAQs(settings.faqs) }
+      catch { console.warn('Invalid FAQ content, using default questions.') }
+    }
+
     return {
+      faqs,
       site,
       socials,
       skillGroups,
@@ -243,7 +250,7 @@ export async function getAllProjectsAdmin() {
   const supabase = await createAuthClient()
   const technologyIcons = await getTechnologyIcons()
   const iconById = new Map(technologyIcons.map((icon) => [icon.id, icon]))
-  const { data: projects } = await supabase.from('projects').select('*').order('sort_order')
+  const { data: projects } = await supabase.from('projects').select('*').order('sort_order').order('id')
   const { data: stack } = await supabase.from('project_stack').select('*').order('sort_order')
   const { data: images } = await supabase.from('project_images').select('*').order('sort_order')
 

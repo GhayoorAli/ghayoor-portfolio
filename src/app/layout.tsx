@@ -4,6 +4,7 @@ import 'lenis/dist/lenis.css'
 import './globals.css'
 import './reference.css'
 import './project-detail.css'
+import './project-markdown.css'
 
 const archivo = Archivo({
   subsets: ['latin'],

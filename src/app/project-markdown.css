@@ -1,0 +1,29 @@
+.project-markdown { min-width: 0; line-height: 1.8; overflow-wrap: anywhere; color: inherit; }
+.project-markdown > :first-child { margin-top: 0; }
+.project-markdown :is(h1,h2,h3,h4,h5,h6) { line-height: 1.2; margin: 1.8em 0 .7em; font-family: var(--font-display); letter-spacing: -.03em; }
+.project-markdown h1 { font-size: clamp(2rem, 4vw, 3.5rem); }
+.project-markdown h2 { font-size: clamp(1.6rem, 3vw, 2.5rem); border-bottom: 1px solid var(--line); padding-bottom: .35em; }
+.project-markdown h3 { font-size: 1.4rem; }
+.project-markdown :is(p,ul,ol,blockquote,pre,table,details) { margin: 1.1em 0; }
+.project-markdown :is(ul,ol) { padding-left: 1.6em; }
+.project-markdown li + li { margin-top: .3em; }
+.project-markdown li > p { margin: .4em 0; }
+.project-markdown a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.project-markdown a:hover { opacity: .7; }
+.project-markdown img { max-width: 100%; height: auto; vertical-align: middle; }
+.project-markdown code { font-family: var(--font-mono); font-size: .85em; background: rgba(110,110,100,.12); padding: .2em .4em; border-radius: 4px; }
+.project-markdown pre { max-width: 100%; overflow-x: auto; background: #20221e; color: #efeddf; border-radius: 12px; padding: 1.4em; line-height: 1.65; overflow-wrap: normal; }
+.project-markdown pre code { background: none; padding: 0; color: inherit; }
+.project-markdown blockquote { padding: .2em 1.2em; border-left: 3px solid #8f8e51; background: rgba(143,142,81,.08); }
+.project-markdown-table { max-width: 100%; overflow-x: auto; }
+.project-markdown table { width: 100%; border-collapse: collapse; font-size: .92em; }
+.project-markdown :is(th,td) { padding: .75em 1em; border: 1px solid var(--line-strong); text-align: left; }
+.project-markdown th { background: rgba(110,110,100,.1); }
+.project-markdown tr:nth-child(even) { background: rgba(110,110,100,.04); }
+.project-markdown hr { margin: 2em 0; border: 0; border-top: 1px solid var(--line-strong); }
+.project-markdown details { padding: 1em; border: 1px solid var(--line); border-radius: 8px; }
+.project-markdown summary { cursor: pointer; font-weight: 600; }
+.project-markdown .contains-task-list { list-style: none; padding-left: .3em; }
+.project-markdown .task-list-item input { margin-right: .6em; width: auto; }
+.project-markdown .project-diagram { margin: 1.5em 0; max-width: 100%; overflow: auto; }
+.ref-case-readme { min-width: 0; }

@@ -15,7 +15,7 @@ function getMermaid() {
       const mermaid = mod.default
       mermaid.initialize({
         startOnLoad: false,
-        securityLevel: 'loose',
+        securityLevel: 'strict',
         theme: 'base',
         themeVariables: {
           primaryColor: '#dedbc9',
@@ -63,6 +63,7 @@ export function MermaidDiagram({ chart, title }: MermaidDiagramProps) {
 
   useEffect(() => {
     let cancelled = false
+    setStatus('loading')
     const renderId = `mermaid-${reactId}-${Math.random().toString(36).slice(2, 9)}`
 
     const run = async () => {
@@ -79,7 +80,7 @@ export function MermaidDiagram({ chart, title }: MermaidDiagramProps) {
         if (svgEl) {
           svgEl.removeAttribute('height')
           svgEl.style.height = 'auto'
-          svgEl.style.maxWidth = '100%'
+          svgEl.style.maxWidth = svgEl.style.maxWidth || '100%'
           svgEl.setAttribute('width', '100%')
           svgEl.setAttribute('preserveAspectRatio', 'xMidYMin meet')
         }
@@ -101,21 +102,17 @@ export function MermaidDiagram({ chart, title }: MermaidDiagramProps) {
     }
   }, [chart, reactId])
 
-  if (status === 'error') {
-    return (
-      <pre className="project-diagram-fallback" aria-label={title ?? 'Diagram'}>
-        {chart}
-      </pre>
-    )
-  }
-
   return (
+    <>
+    {status === 'error' && <pre className="project-diagram-fallback" aria-label={title ?? 'Diagram'}>{chart}</pre>}
     <div
+      hidden={status === 'error'}
       className={`project-diagram${status === 'loading' ? ' is-loading' : ''}`}
       ref={containerRef}
       role="img"
       aria-label={title ?? 'Diagram'}
       aria-busy={status === 'loading'}
     />
+    </>
   )
 }

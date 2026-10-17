@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ProjectsOrder } from '@/components/admin/ProjectsOrder'
 import { getAllProjectsAdmin } from '@/lib/content'
 
 export default async function AdminProjectsPage() {
@@ -18,54 +19,7 @@ export default async function AdminProjectsPage() {
         </div>
       </header>
 
-      <div className="admin-card">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Cover</th>
-              <th>Name</th>
-              <th>Slug</th>
-              <th>Status</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((project) => (
-              <tr key={project.id ?? project.slug}>
-                <td>
-                  {project.cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img className="admin-thumb" src={project.cover} alt="" />
-                  ) : (
-                    <span className="admin-meta-pill">No cover</span>
-                  )}
-                </td>
-                <td>
-                  <strong>{project.name}</strong>
-                  <div style={{ color: '#5e5878', fontSize: '0.85rem', marginTop: 4 }}>{project.tag}</div>
-                </td>
-                <td>
-                  <code>{project.slug}</code>
-                </td>
-                <td>
-                  <span className="admin-meta-pill">
-                    {project.is_published ? 'Published' : 'Draft'}
-                  </span>
-                </td>
-                <td>
-                  {project.id ? (
-                    <Link className="admin-btn secondary admin-btn-sm" href={`/admin/projects/${project.id}`}>
-                      Edit
-                    </Link>
-                  ) : (
-                    <span style={{ color: '#5e5878', fontSize: '0.85rem' }}>Seed only</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ProjectsOrder initial={projects} />
     </div>
   )
 }

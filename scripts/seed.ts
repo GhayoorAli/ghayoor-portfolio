@@ -80,6 +80,7 @@ async function main() {
     about_heading: content.site.about_heading,
     about_body: content.site.about_body,
     portrait_url: content.site.portrait_url,
+    faqs: content.faqs,
   })
   if (settingsError) throw settingsError
 

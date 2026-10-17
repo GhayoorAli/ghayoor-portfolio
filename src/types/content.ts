@@ -98,7 +98,10 @@ export type WorkflowItem = {
   text: string
 }
 
+export type FAQItem = { question: string; answer: string }
+
 export type PortfolioContent = {
+  faqs: FAQItem[]
   site: SiteSettings
   socials: SocialLink[]
   skillGroups: SkillGroup[]

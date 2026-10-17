@@ -1,3 +1,5 @@
+import bundledIcons from '@/data/technology-icons.json'
+
 export type IconOption = {
   id: string
   label: string
@@ -6,11 +8,11 @@ export type IconOption = {
 }
 
 export function normalizeIconName(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]/g, '')
+  return value.toLowerCase().replace(/\+/g, 'plus').replace(/#/g, 'sharp').replace(/[^a-z0-9]/g, '')
 }
 
 /** Icons available under /public/icons — used by Skills & Project stack pickers. */
-export const ICON_OPTIONS: IconOption[] = [
+const LOCAL_ICONS: IconOption[] = [
   { id: 'php', label: 'PHP', src: '/icons/php.svg' },
   { id: 'laravel', label: 'Laravel', src: '/icons/laravel.svg' },
   { id: 'symfony', label: 'Symfony', src: '/icons/symfony.svg' },
@@ -54,6 +56,12 @@ export const ICON_OPTIONS: IconOption[] = [
   { id: 'vscode', label: 'VS Code', src: '/icons/vscode.svg' },
   { id: 'cursor', label: 'Cursor', src: '/icons/cursor.svg' },
   { id: 'claude', label: 'Claude Code', src: '/icons/claude.svg' },
+]
+
+// Bundled SVGs are served by the app; no third-party image host is needed at runtime.
+export const ICON_OPTIONS: IconOption[] = [
+  ...LOCAL_ICONS,
+  ...bundledIcons.filter(icon => !LOCAL_ICONS.some(local => normalizeIconName(local.label) === normalizeIconName(icon.label) || normalizeIconName(local.id) === normalizeIconName(icon.id.replace(/^(devicon|simple-icons)-/, '')))),
 ]
 
 export const ICON_BY_ID = Object.fromEntries(ICON_OPTIONS.map((o) => [o.id, o])) as Record<

@@ -95,7 +95,7 @@ function mapStack(value: unknown, warnings: string[], iconOptions: IconOption[])
       const option = findIconByName(aliasedId, iconOptions) ?? findIconByName(name, iconOptions)
 
       if (!option) {
-        warnings.push(`No matching icon was found for "${name}". Select its icon in the Stack tab.`)
+        warnings.push(`No matching icon was found for "${name}". Choose an icon in Technologies.`)
         return { id: slugify(name), name }
       }
 
@@ -190,32 +190,28 @@ function mermaidBlock(value: string) {
 }
 
 function detectStack(value: string, warnings: string[], iconOptions: IconOption[]) {
-  const segments = value
-    .replace(/\[([^\]]+)]\([^)]*\)/g, '$1')
-    .split(/[\n,|•·]+/)
-    .map((segment) =>
-      normalize(
-        segment
-          .replace(/^\s*[-*+]\s*/, '')
-          .replace(/\([^)]*\)/g, ''),
-      ),
-    )
-    .filter(Boolean)
-  const detected = iconOptions.filter((option) => {
-    const id = normalize(option.id)
-    const label = normalize(option.label)
-    const aliases = Object.entries(ICON_ALIASES)
-      .filter(([, target]) => target === option.id)
-      .map(([alias]) => alias)
-    return [id, label, ...aliases].some((candidate) =>
-      segments.some(
-        (segment) =>
-          segment === candidate || segment.startsWith(candidate) || segment.endsWith(candidate),
-      ),
-    )
-  }).map((option) => option.label)
+  // Match complete technology names, including names inside tables, badges and links.
+  const source = value.replace(/```[\s\S]*?```/g, '').replace(/https?:\/\/[^\s)]+/g, '')
+  const matches: { option: IconOption; start: number; end: number }[] = []
+  for (const option of iconOptions) {
+    const aliases = Object.entries(ICON_ALIASES).filter(([, target]) => target === option.id).map(([alias]) => alias)
+    const candidates = [option.label, option.id.replace(/^(devicon|simple-icons)-/, ''), ...aliases]
+    for (const candidate of candidates) {
+      const escaped = candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[ .-]+/g, '[ .-]?')
+      for (const match of source.matchAll(new RegExp(`(?<![a-zA-Z0-9+#])${escaped}(?![a-zA-Z0-9+#])`, 'gi'))) {
+        matches.push({ option, start: match.index!, end: match.index! + match[0].length })
+      }
+    }
+  }
+  // A full name wins over contained names: Tailwind CSS vs CSS, React Native vs React.
+  matches.sort((a, b) => (b.end - b.start) - (a.end - a.start))
+  const selected: typeof matches = []
+  for (const match of matches) {
+    if (!selected.some(other => match.start < other.end && match.end > other.start)) selected.push(match)
+  }
+  const detected = [...new Set(selected.sort((a, b) => a.start - b.start).map(match => match.option.label))]
 
-  return mapStack([...new Set(detected)], warnings, iconOptions)
+  return mapStack(detected, warnings, iconOptions)
 }
 
 function detectLinks(readme: string) {
@@ -287,7 +283,7 @@ function parsePlainMarkdown(readme: string, iconOptions: IconOption[]) {
   const problemSection = findSection(sections, ['problem', 'the problem', 'motivation', 'why'])
   const roleSection = findSection(sections, ['my role', 'role', 'responsibilities'])
   const featuresSection = findSection(sections, ['features', 'key features', 'what i built', 'functionality'])
-  const stackSection = findSection(sections, ['tech stack', 'technology stack', 'technologies', 'built with'])
+  const stackSection = findSection(sections, ['tech stack', 'technology stack', 'technologies', 'built with', 'technology', 'tools', 'dependencies', 'stack'])
   const resultsSection = findSection(sections, ['results', 'outcomes', 'impact'])
   const architectureSection = findSection(sections, ['architecture', 'system architecture'])
   const workflowSection = findSection(sections, ['workflow', 'user flow', 'meeting workflow'])
@@ -298,8 +294,8 @@ function parsePlainMarkdown(readme: string, iconOptions: IconOption[]) {
   const projectFocusedText = sections
     .filter((section) => !excluded.test(section.heading.toLowerCase()))
     .map((section) => `${section.heading}\n${section.body}`)
-    .join('\n')
-  const stack = detectStack(stackSection?.body ?? projectFocusedText, warnings, iconOptions)
+    .join('\n') || readme
+  const stack = detectStack(stackSection?.body ?? projectFocusedText, warnings, stackSection ? iconOptions : iconOptions.filter(option => option.label.length >= 4))
   const features = featuresSection ? bulletItems(featuresSection.body) : []
   const challenges = challengesFromMarkdown(challengesSection)
   const hook = firstParagraph(overview?.body ?? titleSection?.body ?? readme)

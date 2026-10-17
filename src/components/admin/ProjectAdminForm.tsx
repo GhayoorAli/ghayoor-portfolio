@@ -4,11 +4,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { revalidatePortfolio } from '@/app/admin/actions'
+import { IconSelect } from '@/components/admin/IconSelect'
 import { ReadmePreview } from '@/components/admin/ReadmePreview'
 import type { IconOption } from '@/lib/icon-catalog'
 import { applyReadmeToProject } from '@/lib/project-readme'
 import { createClient } from '@/lib/supabase/client'
-import type { Project } from '@/types/content'
+import type { Project, ProjectStackItem } from '@/types/content'
 
 const emptyProject = (): Project => ({
   slug: '',
@@ -31,16 +32,12 @@ const emptyProject = (): Project => ({
   is_published: true,
 })
 
-const README_HINT = `Use these headings so the public page can style the sections:
+const README_HINT = `# Project name
 
-## The problem
-## My role
-## Tech stack
-## Features
-## Architecture
-## Challenges & solutions
+Paste your complete README here, in any order.
 
-You can delete any section you do not need. Installation, env, and licence text can stay out.`
+Headings, text, tables, images, lists, code, and Mermaid diagrams are supported.
+No specific section names are required.`
 
 export function ProjectAdminForm({
   initial,
@@ -50,6 +47,8 @@ export function ProjectAdminForm({
   initialIcons: IconOption[]
 }) {
   const router = useRouter()
+  const [icons, setIcons] = useState(initialIcons)
+  const [manualStack, setManualStack] = useState<ProjectStackItem[] | null>(initial?.stack.length ? initial.stack : null)
   const [project, setProject] = useState<Project>(initial ?? emptyProject())
   const [gallery, setGallery] = useState<string[]>(initial?.gallery ?? [])
   const [readme, setReadme] = useState(initial?.readme ?? '')
@@ -58,6 +57,9 @@ export function ProjectAdminForm({
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+
+  const detectedProject = useMemo(() => applyReadmeToProject(project, readme, icons), [project, readme, icons])
+  const stack = manualStack ?? detectedProject.stack
 
   const title = useMemo(
     () => (project.id ? `Edit · ${project.name || project.slug}` : 'New project'),
@@ -87,7 +89,8 @@ export function ProjectAdminForm({
     setError('')
     try {
       if (!project.slug.trim() || !project.name.trim()) throw new Error('Slug and name are required')
-      const styled = applyReadmeToProject({ ...project, gallery }, readme, initialIcons)
+      const styled = { ...detectedProject, gallery, stack: stack.filter(item => item.name.trim()).filter((item, index, all) => all.findIndex(other => other.id === item.id) === index) }
+      if (styled.stack.some(item => !item.id)) throw new Error('Choose an icon for each technology.')
       const supabase = createClient()
 
       const row = {
@@ -116,13 +119,17 @@ export function ProjectAdminForm({
         const { error: updateError } = await supabase.from('projects').update(row).eq('id', projectId)
         if (updateError) throw updateError
       } else {
-        const { data, error: insertError } = await supabase.from('projects').insert(row).select('id').single()
+        const { data: lastProject, error: orderError } = await supabase.from('projects').select('sort_order').order('sort_order', { ascending: false }).limit(1).maybeSingle()
+        if (orderError) throw orderError
+        const { data, error: insertError } = await supabase.from('projects').insert({ ...row, sort_order: (lastProject?.sort_order ?? -1) + 1 }).select('id').single()
         if (insertError) throw insertError
         projectId = data.id
       }
 
-      await supabase.from('project_stack').delete().eq('project_id', projectId)
-      await supabase.from('project_images').delete().eq('project_id', projectId)
+      const { error: deleteStackError } = await supabase.from('project_stack').delete().eq('project_id', projectId)
+      if (deleteStackError) throw deleteStackError
+      const { error: deleteImagesError } = await supabase.from('project_images').delete().eq('project_id', projectId)
+      if (deleteImagesError) throw deleteImagesError
 
       if (styled.stack.length) {
         const { error: stackError } = await supabase.from('project_stack').insert(
@@ -172,7 +179,7 @@ export function ProjectAdminForm({
           </Link>
           <h1>{title}</h1>
           <p className="admin-lead">
-            Basics and images here. Story sections come from the README headings on the public page.
+            Manage project details, technologies, images, and the complete README.
           </p>
         </div>
         <div className="admin-page-actions">
@@ -351,13 +358,31 @@ export function ProjectAdminForm({
         </div>
       </section>
 
+      <section className="admin-card">
+        <div className="admin-section-head">
+          <div><h2>Technologies</h2><p className="admin-section-sub">Detected from your README. Search the bundled library to add or correct icons. The same library is available in Skills.</p></div>
+          <button type="button" className="admin-btn secondary admin-btn-sm" onClick={() => setManualStack(null)}>Detect from README</button>
+        </div>
+        <div className="admin-stack">
+          {stack.map((item, index) => <div className="admin-tech-row" key={`${index}-${item.id}`}>
+            <IconSelect value={item.id} options={icons}
+              onIconCreated={icon => setIcons(previous => [...previous.filter(item => item.id !== icon.id), icon])}
+              onChange={(id, name) => setManualStack(stack.map((item, i) => i === index ? { id, name, icon_url: icons.find(icon => icon.id === id)?.src } : item))} />
+            <input aria-label="Technology display name" value={item.name} onChange={event => setManualStack(stack.map((item, i) => i === index ? { ...item, name: event.target.value } : item))} />
+            <button type="button" className="admin-icon-btn danger" aria-label={`Remove ${item.name || 'technology'}`} onClick={() => setManualStack(stack.filter((_, i) => i !== index))}>×</button>
+          </div>)}
+        </div>
+        {!stack.length && <p className="admin-section-sub">Paste a README below to detect technologies, or add them here.</p>}
+        <button type="button" className="admin-btn secondary admin-btn-sm" style={{ marginTop: 16 }} onClick={() => setManualStack([...stack, { id: '', name: '' }])}>+ Add technology</button>
+      </section>
+
       <section className="admin-card admin-readme-card">
         <div className="admin-section-head">
           <div>
             <h2>README</h2>
             <p className="admin-section-sub">
-              Paste GitHub README markdown. The public page styles matching headings the same as
-              before — nothing is auto-filled into extra form fields.
+              Paste any README. All sections stay in their original order, with consistent styling for
+              headings, tables, code, images, and Mermaid diagrams.
             </p>
           </div>
           <div className="admin-readme-tabs" role="tablist" aria-label="README editor">
@@ -379,7 +404,7 @@ export function ProjectAdminForm({
         </div>
 
         {preview ? (
-          <ReadmePreview value={readme} />
+          <ReadmePreview value={readme} repository={project.links.github} />
         ) : (
           <div className="admin-field">
             <label htmlFor="project-readme">Markdown</label>

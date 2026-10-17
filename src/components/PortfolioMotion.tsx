@@ -58,15 +58,23 @@ function useSectionProgress(ref: React.RefObject<HTMLElement | null>, start: num
 
 export function TimelinePath() {
   const ref = useRef<HTMLDivElement>(null)
-  const scrollYProgress = useSectionProgress(ref, .9, .8, true)
-  const reduced = useReducedMotion()
-  const [geometry, setGeometry] = useState({ width: 1000, height: 1200, path: '', tail: '' })
+  const pathRef = useRef<SVGPathElement>(null)
+  const travelerRef = useRef<SVGGElement>(null)
+  const progress = useMotionValue(0)
+  const gradientId = `journey-${useId().replace(/:/g, '')}`
+  const [geometry, setGeometry] = useState({ width: 1000, height: 1200, path: '', points: [] as { x: number; y: number }[] })
+
   useEffect(() => {
     const timeline = ref.current?.parentElement
     if (!timeline) return
+    let cancelled = false
     const measure = () => {
+      if (cancelled) return
       const cards = Array.from(timeline.querySelectorAll<HTMLElement>('.ref-milestone'))
-      const points = cards.map(card => ({ x: card.offsetLeft - 25, y: card.offsetTop + card.offsetHeight - 25 }))
+      const points = cards.map(card => {
+        const dot = card.querySelector<HTMLElement>('.ref-timeline-dot')!
+        return { x: card.offsetLeft + dot.offsetLeft + dot.offsetWidth / 2, y: card.offsetTop + dot.offsetTop + dot.offsetHeight / 2 }
+      })
       if (!points.length) return
       let path = `M ${points[0].x} 0`
       let previous = { x: points[0].x, y: 0 }
@@ -76,22 +84,94 @@ export function TimelinePath() {
         previous = point
       })
       const height = timeline.offsetHeight
-      setGeometry({ width: timeline.clientWidth, height, path, tail: `M ${previous.x} ${previous.y} Q ${previous.x} ${height} ${previous.x + 130} ${height}` })
+      const width = timeline.clientWidth
+      const endX = Math.min(width - 12, Math.max(12, previous.x + 90))
+      path += ` Q ${previous.x} ${height - 12} ${endX} ${height - 12}`
+      setGeometry(current => current.path === path && current.width === width && current.height === height ? current : { width, height, path, points })
     }
     const observer = new ResizeObserver(measure)
     observer.observe(timeline)
     timeline.querySelectorAll('.ref-milestone').forEach(card => observer.observe(card))
+    document.fonts.ready.then(measure)
     measure()
-    return () => observer.disconnect()
+    return () => { cancelled = true; observer.disconnect() }
   }, [])
-  return <div className="ref-timeline-path" ref={ref}><svg className="ref-timeline-line" viewBox={`0 0 ${geometry.width} ${geometry.height}`} preserveAspectRatio="none" aria-hidden="true"><motion.path style={reduced ? undefined : { pathLength: scrollYProgress }} d={geometry.path} /><path className="ref-line-dash" d={geometry.tail} /></svg></div>
+
+  useEffect(() => {
+    const timeline = ref.current?.parentElement
+    const path = pathRef.current
+    if (!timeline || !path || !geometry.path) return
+    const cards = Array.from(timeline.querySelectorAll<HTMLElement>('.ref-milestone'))
+    const length = path.getTotalLength()
+    if (!length) return
+    let frame = 0
+    let previousActive = -2
+    let previousReduced: boolean | null = null
+    const motionPreference = matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => {
+      const reduced = motionPreference.matches
+      const bounds = timeline.getBoundingClientRect()
+      const readingY = Math.max(0, Math.min(geometry.height, window.innerHeight * .62 - bounds.top))
+      // Find the point at the reading position along the curve, rather than
+      // assuming that distance along its bends is linear with page scroll.
+      let low = 0, high = length
+      for (let step = 0; step < 14; step += 1) {
+        const middle = (low + high) / 2
+        if (path.getPointAtLength(middle).y < readingY) low = middle
+        else high = middle
+      }
+      const distance = readingY <= 0 ? 0 : readingY >= geometry.height - 12 ? length : (low + high) / 2
+      progress.set(reduced ? 1 : distance / length)
+      const position = path.getPointAtLength(distance)
+      const traveler = travelerRef.current
+      if (traveler) {
+        traveler.setAttribute('transform', `translate(${position.x} ${position.y})`)
+        traveler.style.opacity = !reduced && readingY > 0 && readingY < geometry.height - 12 ? '1' : '0'
+      }
+      let active = -1
+      geometry.points.forEach((point, index) => { if (point.y <= readingY) active = index })
+      if (active !== previousActive || reduced !== previousReduced) {
+        cards.forEach((card, index) => { card.dataset.journeyState = reduced || index < active ? 'reached' : index === active ? 'current' : 'upcoming' })
+        previousActive = active
+        previousReduced = reduced
+      }
+    }
+    const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    motionPreference.addEventListener('change', schedule)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      motionPreference.removeEventListener('change', schedule)
+      cards.forEach(card => delete card.dataset.journeyState)
+    }
+  }, [geometry, progress])
+
+  return <div className="ref-timeline-path" ref={ref} aria-hidden="true">
+    <svg className="ref-timeline-line" viewBox={`0 0 ${geometry.width} ${geometry.height}`} preserveAspectRatio="none">
+      <defs><linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#899448" /><stop offset="100%" stopColor="#cad339" /></linearGradient></defs>
+      <path ref={pathRef} className="ref-journey-track" d={geometry.path} />
+      <motion.path className="ref-journey-glow" style={{ pathLength: progress }} d={geometry.path} />
+      <motion.path className="ref-journey-progress" style={{ pathLength: progress, stroke: `url(#${gradientId})` }} d={geometry.path} />
+      <g ref={travelerRef} className="ref-journey-traveler" style={{ opacity: 0 }}>
+        <circle className="ref-journey-traveler-halo" r="15" />
+        <circle className="ref-journey-traveler-orbit" r="10" />
+        <path className="ref-journey-traveler-core" d="M 0 -5 L 5 0 L 0 5 L -5 0 Z" />
+      </g>
+    </svg>
+  </div>
 }
 
-export function StoryButton({ title, text, label = "Read more ↗", details }: { title: string; text: string; label?: string; details?: ReactNode }) {
+export function StoryButton({ title, text, label = "Read more ↗", details, kind = "Details" }: { title: string; text: string; label?: string; details?: ReactNode; kind?: string }) {
   const [open, setOpen] = useState(false)
   const lenis = useLenis()
   const titleId = useId()
   const closeRef = useRef<HTMLButtonElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  const reduced = useReducedMotion()
   const trigger = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     if (!open) return
@@ -100,11 +180,32 @@ export function StoryButton({ title, text, label = "Read more ↗", details }: {
     document.body.style.overflow = 'hidden'
     lenis?.stop()
     closeRef.current?.focus()
-    const key = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); if (event.key === 'Tab') { event.preventDefault(); closeRef.current?.focus() } }
+    const key = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+      if (event.key !== 'Tab') return
+      const controls = Array.from(modalRef.current?.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea, summary, [tabindex="0"]') ?? []).filter(element => element.tabIndex >= 0 && element.getClientRects().length > 0)
+      if (!controls?.length) return
+      const first = controls[0], last = controls[controls.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
     window.addEventListener('keydown', key)
     return () => { document.body.style.overflow = previous; lenis?.start(); window.removeEventListener('keydown', key); triggerElement?.focus() }
   }, [open, lenis])
-  return <><button ref={trigger} aria-label={label !== "Read more ↗" ? title : undefined} className="ref-read-more" onClick={() => setOpen(true)}>{label === "Read more ↗" ? <RollingLabel>{label}</RollingLabel> : label}</button>{typeof document !== 'undefined' && createPortal(<AnimatePresence>{open && <motion.div className="ref-modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)}><motion.div role="dialog" data-lenis-prevent aria-modal="true" aria-labelledby={titleId} className="ref-story-modal" initial={{ scale: .8, y: 40 }} animate={{ scale: 1, y: 0 }} exit={{ scale: .9, opacity: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 260 }} onClick={event => event.stopPropagation()}><button ref={closeRef} className="ref-modal-close" onClick={() => setOpen(false)} aria-label="Close details">×</button><h2 id={titleId}>{title}</h2><p>{text}</p>{details}</motion.div></motion.div>}</AnimatePresence>, document.body)}</>
+  return <>
+    <button ref={trigger} aria-label={label !== "Read more ↗" ? title : undefined} className="ref-read-more" onClick={() => setOpen(true)}>{label === "Read more ↗" ? <RollingLabel>{label}</RollingLabel> : label}</button>
+    {typeof document !== 'undefined' && createPortal(<AnimatePresence>{open &&
+      <motion.div className="ref-modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)}>
+        <motion.div ref={modalRef} role="dialog" data-lenis-prevent aria-modal="true" aria-labelledby={titleId} className={`ref-story-modal${kind === 'Experience' && details ? ' ref-story-modal--experience' : ''}`} initial={reduced ? false : { scale: .98, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: .22, ease: [.16, 1, .3, 1] }} onClick={event => event.stopPropagation()}>
+          <header className="ref-story-header">
+            <div><span className="ref-story-kicker"><span aria-hidden="true">↗</span>{kind}</span><h2 id={titleId}>{title}</h2></div>
+            <button ref={closeRef} className="ref-modal-close" onClick={() => setOpen(false)} aria-label="Close details">×</button>
+          </header>
+          <div className="ref-story-body" tabIndex={0}>{!(kind === 'Experience' && details) && <p className="ref-story-summary">{text}</p>}{details}</div>
+        </motion.div>
+      </motion.div>
+    }</AnimatePresence>, document.body)}
+  </>
 }
 
 function Character({ letter, index, count, progress }: { letter: string; index: number; count: number; progress: ReturnType<typeof useMotionValue<number>> }) {
@@ -168,7 +269,7 @@ export function FAQGroup({ questions }: { questions: string[][] }) {
     else next.add(index)
     return next
   })
-  const item = (index: number) => <FAQ key={questions[index][0]} question={questions[index][0]} answer={questions[index][1]} open={opened.has(index)} onToggle={() => toggle(index)} />
+  const item = (index: number) => <FAQ key={index} question={questions[index][0]} answer={questions[index][1]} open={opened.has(index)} onToggle={() => toggle(index)} />
   return <div className="ref-faq-grid">{twoColumns ? [0, 1].map(column => <div className="ref-faq-column" key={column}>{questions.map((_, index) => index % 2 === column ? item(index) : null)}</div>) : questions.map((_, index) => item(index))}</div>
 }
 

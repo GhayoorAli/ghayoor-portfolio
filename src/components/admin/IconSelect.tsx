@@ -147,7 +147,7 @@ export function IconSelect({
             <header className="admin-icon-library-head">
               <div>
                 <h2>Choose an icon</h2>
-                <p>Search the library or upload a reusable icon.</p>
+                <p>Search Devicon, Simple Icons, and your uploaded icons.</p>
               </div>
               <button
                 className="admin-icon-btn"
@@ -170,8 +170,9 @@ export function IconSelect({
               />
             </div>
 
+            <p className="admin-section-sub" role="status">{filteredOptions.length} icons{filteredOptions.length > 120 ? ' — showing the first 120. Search to narrow the list.' : ''}</p>
             <div className="admin-icon-library-grid">
-              {filteredOptions.map((item) => (
+              {filteredOptions.slice(0, 120).map((item) => (
                 <button
                   className={`admin-icon-library-option ${item.id === option?.id ? 'is-selected' : ''}`}
                   type="button"
@@ -182,7 +183,7 @@ export function IconSelect({
                     setOpen(false)
                   }}
                 >
-                  <img src={item.src} alt="" width={28} height={28} />
+                  <img src={item.src} alt="" width={28} height={28} loading="lazy" />
                   <span>{item.label}</span>
                 </button>
               ))}

@@ -1,3 +1,4 @@
+import { getDefaultFAQs } from '@/lib/faq-content'
 import {
   about,
   certifications,
@@ -62,5 +63,6 @@ export function getFallbackContent(): PortfolioContent {
       sort_order: index,
     })),
     workflow: [...workflow],
+    faqs: getDefaultFAQs(site, workflow),
   }
 }
