@@ -287,49 +287,6 @@
   color: #1f2328;
 }
 
-.admin-md-preview h1,
-.admin-md-preview h2,
-.admin-md-preview h3 {
-  margin: 1.2em 0 0.5em;
-  font-family: Syne, sans-serif;
-  line-height: 1.25;
-}
-
-.admin-md-preview h1 { font-size: 1.6rem; }
-.admin-md-preview h2 { font-size: 1.25rem; border-bottom: 1px solid #d1d9e0; padding-bottom: 0.3em; }
-.admin-md-preview h3 { font-size: 1.05rem; }
-
-.admin-md-preview p,
-.admin-md-preview li {
-  line-height: 1.6;
-}
-
-.admin-md-preview ul {
-  margin: 0 0 1em;
-  padding-left: 1.4em;
-}
-
-.admin-md-preview code {
-  padding: 0.15em 0.4em;
-  border-radius: 6px;
-  background: #f3f4f6;
-  font-size: 0.88em;
-}
-
-.admin-md-pre {
-  overflow: auto;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: #0d1117;
-  color: #e6edf3;
-}
-
-.admin-md-pre code {
-  padding: 0;
-  background: transparent;
-  color: inherit;
-}
-
 .admin-md-empty,
 .admin-md-note {
   color: var(--admin-muted);
@@ -1061,3 +1018,21 @@
     grid-template-columns: 1fr;
   }
 }
+
+.admin-project-order-row { display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid #e3dfeb; }
+.admin-project-order-row.is-dragging { opacity: .4; }
+.admin-drag-grip { cursor: grab; }
+.admin-drag-grip:active { cursor: grabbing; }
+.admin-order-number { font-variant-numeric: tabular-nums; color: #5e5878; min-width: 24px; }
+.admin-project-order-name { display: grid; gap: 5px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.admin-project-order-name > span { font-size: .85rem; color: #5e5878; }
+.admin-project-order-controls { display: flex; gap: 6px; }
+@media (max-width: 650px) {
+  .admin-project-order-row { flex-wrap: wrap; gap: 8px; }
+  .admin-project-order-row .admin-thumb { display: none; }
+  .admin-project-order-controls { margin-left: auto; }
+}
+.admin-tech-row { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(100px, 1fr) auto; align-items: center; gap: 12px; }
+@media (max-width: 600px) { .admin-tech-row { grid-template-columns: 1fr auto; } .admin-tech-row .admin-icon-select { grid-column: 1 / -1; } }
+
+.admin-faq-fields { border: 0; padding: 0; margin: 0; min-width: 0; }

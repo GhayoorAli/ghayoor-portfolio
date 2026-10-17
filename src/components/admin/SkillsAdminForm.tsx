@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { revalidatePortfolio } from '@/app/admin/actions'
 import { IconSelect } from '@/components/admin/IconSelect'
-import { ICON_BY_ID, type IconOption } from '@/lib/icon-catalog'
+import { type IconOption } from '@/lib/icon-catalog'
 import { createClient } from '@/lib/supabase/client'
 import type { SkillGroup } from '@/types/content'
 
@@ -25,6 +25,9 @@ export function SkillsAdminForm({
     setMessage('')
     setError('')
     try {
+      if (groups.some(group => group.items.some(item => !item.name.trim() || !item.icon_id))) {
+        throw new Error('Choose an icon and enter a name for every skill.')
+      }
       const supabase = createClient()
       await supabase.from('skills').delete().neq('id', '00000000-0000-0000-0000-000000000000')
       await supabase.from('skill_groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
@@ -223,7 +226,6 @@ export function SkillsAdminForm({
                 className="admin-btn secondary admin-btn-sm"
                 type="button"
                 onClick={() => {
-                  const fallback = ICON_BY_ID.javascript
                   setGroups((prev) =>
                     prev.map((g, i) =>
                       i === gi
@@ -233,8 +235,8 @@ export function SkillsAdminForm({
                               ...g.items,
                               {
                                 id: `tmp-${Date.now()}`,
-                                name: fallback.label,
-                                icon_id: fallback.id,
+                                name: '',
+                                icon_id: '',
                               },
                             ],
                           }

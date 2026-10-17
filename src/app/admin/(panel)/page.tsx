@@ -24,6 +24,9 @@ export default function AdminDashboardPage() {
           <Link className="admin-btn secondary" href="/admin/site">
             Site & About
           </Link>
+          <Link className="admin-btn secondary" href="/admin/faq">
+            FAQ
+          </Link>
           <Link className="admin-btn secondary" href="/admin/skills">
             Skills
           </Link>

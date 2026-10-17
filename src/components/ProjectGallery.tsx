@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion, wrap } from 'framer-motion'
-import { useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useImageResolution } from './useImageResolution'
 
 type ProjectGalleryProps = {
@@ -13,14 +13,35 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
   const [[page, direction], setPage] = useState([0, 0])
   const index = wrap(0, images.length, page)
   const imageRef = useRef<HTMLImageElement>(null)
+  const thumbsRef = useRef<HTMLDivElement>(null)
   const imageSize = useImageResolution(images[index] || '', imageRef)
+
+  useEffect(() => {
+    const rail = thumbsRef.current
+    if (!rail) return
+    const revealSelection = () => {
+      const selected = rail.querySelector<HTMLElement>('[aria-pressed="true"]')
+      if (!selected) return
+      const bounds = rail.getBoundingClientRect()
+      const item = selected.getBoundingClientRect()
+      const bottom = bounds.top + rail.clientHeight
+      const right = bounds.left + rail.clientWidth
+      const top = item.top < bounds.top ? item.top - bounds.top : item.bottom > bottom ? item.bottom - bottom : 0
+      const left = item.left < bounds.left ? item.left - bounds.left : item.right > right ? item.right - right : 0
+      if (top || left) rail.scrollBy({ top, left, behavior: 'instant' })
+    }
+    revealSelection()
+    const observer = new ResizeObserver(revealSelection)
+    observer.observe(rail)
+    return () => observer.disconnect()
+  }, [index, images.length])
 
   const paginate = (dir: number) => {
     setPage(([current]) => [current + dir, dir])
   }
 
   const goTo = (next: number) => {
-    setPage(([current]) => [next, next > current ? 1 : -1])
+    setPage(([current]) => [next, next > wrap(0, images.length, current) ? 1 : -1])
   }
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -105,7 +126,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
       </div>
 
       <div className="project-carousel-meta">
-        <p className="project-carousel-count">
+        <p className="project-carousel-count" aria-live="polite" aria-atomic="true">
           {String(index + 1).padStart(2, '0')} <span>/ {String(images.length).padStart(2, '0')}</span>
         </p>
         {images.length > 1 ? (
@@ -126,7 +147,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
       </div>
 
       {images.length > 1 ? (
-        <div className="project-carousel-thumbs" role="group" aria-label="Screenshot thumbnails">
+        <div className="project-carousel-thumbs" ref={thumbsRef} role="group" aria-label="Screenshot thumbnails">
           {images.map((src, i) => (
             <button
               key={src}
@@ -136,7 +157,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
               aria-label={`View screenshot ${i + 1}`}
               aria-pressed={i === index}
             >
-              <img src={src} alt="" /><span>{String(i + 1).padStart(2, '0')}</span>
+              <img src={src} alt="" loading="lazy" /><span>{String(i + 1).padStart(2, '0')}</span>
             </button>
           ))}
         </div>

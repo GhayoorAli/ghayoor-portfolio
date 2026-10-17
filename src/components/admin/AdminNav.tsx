@@ -11,6 +11,7 @@ const nav = [
   { href: '/admin/projects', label: 'Projects' },
   { href: '/admin/experience', label: 'Experience' },
   { href: '/admin/education', label: 'Education' },
+  { href: '/admin/faq', label: 'FAQ' },
 ]
 
 export function AdminNav() {
