@@ -12,7 +12,7 @@ export function useLandingSequence() {
     let cancelled = false
     let unlock = 0
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
-    const desktop = innerWidth >= 768
+    const desktop = matchMedia('(min-width: 901px) and (hover: hover) and (pointer: fine)').matches
     const image = page.querySelector<HTMLImageElement>('.ref-portrait-image')
     const wordmark = page.querySelector<HTMLElement>('.ref-wordmark')
     const rect = wordmark?.getBoundingClientRect()

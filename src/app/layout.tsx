@@ -5,6 +5,7 @@ import './globals.css'
 import './reference.css'
 import './project-detail.css'
 import './project-markdown.css'
+import './mobile.css'
 
 const archivo = Archivo({
   subsets: ['latin'],

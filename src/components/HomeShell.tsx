@@ -1,13 +1,12 @@
 'use client'
 
 import { ReactLenis } from 'lenis/react'
-import { useReducedMotion } from 'framer-motion'
+import { useDesktopMotion } from './useDesktopMotion'
 import { ReferencePortfolio } from '@/components/ReferencePortfolio'
 import type { HomeContent } from '@/types/content'
 
 export function HomeShell({ content }: { content: HomeContent }) {
-  const reduce = useReducedMotion()
+  const desktopMotion = useDesktopMotion()
   const body = <ReferencePortfolio content={content} />
-  if (reduce) return body
-  return <ReactLenis root options={{ autoRaf: true, lerp: 0.1, smoothWheel: true, anchors: { offset: -24, duration: 1.1 } }}>{body}</ReactLenis>
+  return <ReactLenis root options={{ autoRaf: desktopMotion, lerp: 0.1, smoothWheel: desktopMotion, anchors: desktopMotion ? { offset: -24, duration: 1.1 } : false }}>{body}</ReactLenis>
 }
