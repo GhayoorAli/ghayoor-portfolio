@@ -3,10 +3,10 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
-import type { PortfolioContent } from '@/types/content'
+import type { HomeContent } from '@/types/content'
 import { Lines } from './PortfolioMotion'
 
-export function SelectedWork({ projects }: { projects: PortfolioContent['projects'] }) {
+export function SelectedWork({ projects }: { projects: HomeContent['projects'] }) {
   const sectionRef = useRef<HTMLElement>(null)
   const windowRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
@@ -74,7 +74,7 @@ export function SelectedWork({ projects }: { projects: PortfolioContent['project
     <div className="ref-work-sticky">
       <div className="ref-section-heading ref-work-heading"><div><span className="ref-eyebrow">Selected work</span><h2><Lines>{'Built with intention,\nMade to Perform'}</Lines></h2></div><p>From thoughtful interfaces to dependable systems. Explore the products I’ve built and the decisions that made them work.</p></div>
       <div className="ref-project-window" ref={windowRef} data-lenis-prevent-horizontal={pinned ? undefined : ''} tabIndex={pinned ? -1 : 0} aria-label="Selected projects"><motion.div className="ref-project-track" ref={trackRef} style={pinned ? { x } : undefined}>
-        {projects.map((project, index) => <div className="ref-project-shell" key={project.slug}><motion.div initial={reduced ? false : { scale: .6, y: '10%', opacity: 0 }} animate={reduced || revealed.includes(index) ? { scale: 1, y: 0, opacity: 1 } : { scale: .6, y: '10%', opacity: 0 }} transition={{ duration: reduced ? 0 : 1.1, delay: index < 2 ? index * .1 : 0, ease: [.16, 1, .3, 1] }}><Link href={`/work/${project.slug}`} className="ref-project"><img className="ref-project-ambient" src={project.cover} alt="" aria-hidden="true" loading="lazy" draggable={false} /><div className="ref-project-device"><div className="ref-device-bar"><i /><i /><i /><span>{project.name}</span></div><img src={project.cover} alt={`${project.name} project preview`} loading="lazy" draggable={false} /></div><div className="ref-project-top"><span className="ref-project-number">{String(index + 1).padStart(2, '0')}</span><div className="ref-project-tags">{project.stack.slice(0, 3).map(tool => <span key={tool.id}>{tool.name}</span>)}</div></div><div className="ref-project-copy"><h3>{project.name}</h3><p>{project.hook}</p></div><span className="ref-project-arrow" aria-hidden="true">↗</span></Link></motion.div></div>)}
+        {projects.map((project, index) => <div className="ref-project-shell" key={project.slug}><motion.div initial={reduced ? false : { scale: .6, y: '10%', opacity: 0 }} animate={reduced || revealed.includes(index) ? { scale: 1, y: 0, opacity: 1 } : { scale: .6, y: '10%', opacity: 0 }} transition={{ duration: reduced ? 0 : 1.1, delay: index < 2 ? index * .1 : 0, ease: [.16, 1, .3, 1] }}><Link href={`/work/${project.slug}`} className="ref-project" prefetch={false}><img className="ref-project-ambient" src={project.cover} alt="" aria-hidden="true" loading="lazy" decoding="async" draggable={false} /><div className="ref-project-device"><div className="ref-device-bar"><i /><i /><i /><span>{project.name}</span></div><img src={project.cover} alt={`${project.name} project preview`} loading="lazy" decoding="async" draggable={false} /></div><div className="ref-project-top"><span className="ref-project-number">{String(index + 1).padStart(2, '0')}</span><div className="ref-project-tags">{project.stack.slice(0, 3).map(tool => <span key={tool.id}>{tool.name}</span>)}</div></div><div className="ref-project-copy"><h3>{project.name}</h3><p>{project.hook}</p></div><span className="ref-project-arrow" aria-hidden="true">↗</span></Link></motion.div></div>)}
       </motion.div></div><span className="ref-work-hint">{pinned ? 'Scroll to explore' : 'Swipe to explore'} <span>↔</span></span>
     </div>
   </section>

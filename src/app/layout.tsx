@@ -9,20 +9,22 @@ import './project-markdown.css'
 const archivo = Archivo({
   subsets: ['latin'],
   variable: '--font-archivo',
-  display: 'block',
-  preload: true,
+  display: 'swap',
+  preload: false,
   adjustFontFallback: true,
 })
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm',
+  preload: false,
   weight: ['400', '500', '600', '700'],
 })
 
 const geistMono = Geist_Mono({
   subsets: ['latin'],
   variable: '--font-geist-mono',
+  preload: false,
 })
 
 export const metadata: Metadata = {

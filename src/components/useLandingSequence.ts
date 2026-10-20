@@ -18,6 +18,8 @@ export function useLandingSequence() {
     const rect = wordmark?.getBoundingClientRect()
     page.style.setProperty('--intro-y', `${rect ? (innerHeight - rect.height) / 2 - rect.top : 0}px`)
     const start = async () => {
+      // Mobile has no intro: do not wait for fonts or image decoding.
+      if (reduced || !desktop) { page.dataset.intro = 'skipped'; return }
       await document.fonts.ready
       if (image) await image.decode().catch(() => undefined)
       if (cancelled) return
