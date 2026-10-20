@@ -37,9 +37,11 @@ export function useHeroMorph(root: React.RefObject<HTMLDivElement | null>) {
     const page = root.current
     if (!page) return
     const media = matchMedia('(min-width: 901px) and (prefers-reduced-motion: no-preference)')
+    let cancelled = false
     let frame = 0
     let pairs: { source: HTMLElement; target: HTMLElement; dx: number; dy: number; sx: number; sy: number; start: number; end: number }[] = []
     const measure = () => {
+      if (cancelled) return
       pairs.forEach(({ source, target }) => { source.style.transform = ''; source.style.opacity = ''; source.style.pointerEvents = ''; target.style.opacity = ''; const sourceControl = source.closest<HTMLElement>('a,button'); const targetControl = target.closest<HTMLElement>('a,button'); if (sourceControl) { sourceControl.tabIndex = 0; sourceControl.style.pointerEvents = '' }; if (targetControl) targetControl.tabIndex = 0 })
       pairs = []
       layoutHeroCards(page)
@@ -58,6 +60,7 @@ export function useHeroMorph(root: React.RefObject<HTMLDivElement | null>) {
       update()
     }
     const update = () => {
+      if (!media.matches) return
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
         if (!media.matches) return
@@ -83,7 +86,7 @@ export function useHeroMorph(root: React.RefObject<HTMLDivElement | null>) {
     window.addEventListener('scroll', update, { passive: true })
     window.addEventListener('resize', measure)
     media.addEventListener('change', measure)
-    return () => { cancelAnimationFrame(frame); window.removeEventListener('scroll', update); window.removeEventListener('resize', measure); media.removeEventListener('change', measure) }
+    return () => { cancelled = true; cancelAnimationFrame(frame); window.removeEventListener('scroll', update); window.removeEventListener('resize', measure); media.removeEventListener('change', measure) }
   }, [root])
 }
 

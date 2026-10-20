@@ -4,7 +4,7 @@ import { gmailComposeUrl } from '@/lib/contact'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, useReducedMotion, useMotionValue, useTransform } from 'framer-motion'
-import type { ExperienceItem, PortfolioContent } from '@/types/content'
+import type { ExperienceItem, HomeContent } from '@/types/content'
 import { Reveal } from './Reveal'
 import { useLandingSequence } from './useLandingSequence'
 import { useHeroMorph } from './useHeroMorph'
@@ -43,10 +43,12 @@ function ExperienceDetails({ item }: { item: ExperienceItem }) {
   </div>
 }
 
-export function ReferencePortfolio({ content }: { content: PortfolioContent }) {
+export function ReferencePortfolio({ content }: { content: HomeContent }) {
   const pageRef = useLandingSequence()
   useHeroMorph(pageRef)
   const { site } = content
+  const portraitUrl = site.portrait_url === '/images/portrait-side-pose.png'
+    ? '/images/portrait-side-pose.lossless.webp' : site.portrait_url
   const navigation = useMemo(() => navigationItems.filter(([id]) => id !== 'faq' || content.faqs.length > 0), [content.faqs.length])
   const brand = site.name.split(' ').find(name => name.toLowerCase() === 'ghayoor') || site.name.split(' ')[0]
   const [active, setActive] = useState('top')
@@ -59,6 +61,7 @@ export function ReferencePortfolio({ content }: { content: PortfolioContent }) {
   const heroFade = useTransform(heroProgress, [.05, .2], [1, 0])
 
   useEffect(() => {
+    let frame = 0
     const updateActive = () => {
       const hero = heroRef.current
       if (hero) heroProgress.set(Math.max(0, Math.min(1, -hero.getBoundingClientRect().top / hero.offsetHeight)))
@@ -69,14 +72,18 @@ export function ReferencePortfolio({ content }: { content: PortfolioContent }) {
       })
       setActive(current)
     }
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; updateActive() })
+    }
     const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setMenuOpen(false) }
-    window.addEventListener('scroll', updateActive, { passive: true })
-    window.addEventListener('resize', updateActive)
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
     window.addEventListener('keydown', closeOnEscape)
     updateActive()
     return () => {
-      window.removeEventListener('scroll', updateActive)
-      window.removeEventListener('resize', updateActive)
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
       window.removeEventListener('keydown', closeOnEscape)
     }
   }, [heroProgress, navigation])
@@ -104,7 +111,7 @@ export function ReferencePortfolio({ content }: { content: PortfolioContent }) {
           <div className="ref-hero-sticky"><h1 data-morph="logo" data-start="0" data-end=".44" className="ref-wordmark" aria-label={brand}><span className="ref-wordmark-intro"><svg viewBox="0 0 1000 300" aria-hidden="true">{Array.from(brand.toUpperCase()).map((letter, index, letters) => <g className="ref-intro-letter" style={{ '--letter-index': index } as React.CSSProperties} key={index}><text x={index * 1000 / letters.length} y="270" textLength={1000 / letters.length} lengthAdjust="spacingAndGlyphs">{letter}</text></g>)}</svg></span></h1>
           <nav className="ref-hero-nav" aria-label="Main"><div>{navigation.slice(0, 3).map(([id, label]) => <a key={id} data-morph={`nav-${id}`} data-uniform="true" data-start={.01 + navigation.findIndex(item => item[0] === id) * .01} data-end={.3 + navigation.findIndex(item => item[0] === id) * .01} href={`#${id}`}><span className="ref-nav-reveal"><RollingLabel>{label}</RollingLabel></span></a>)}</div><div>{navigation.slice(3).map(([id, label]) => <a key={id} data-morph={`nav-${id}`} data-uniform="true" data-start={.01 + navigation.findIndex(item => item[0] === id) * .01} data-end={.3 + navigation.findIndex(item => item[0] === id) * .01} href={`#${id}`}><span className="ref-nav-reveal"><RollingLabel>{label}</RollingLabel></span></a>)}</div></nav>
 
-          <motion.div className="ref-portrait-backdrop" style={reduce ? undefined : { filter: blur, opacity: portraitOpacity }}><img className="ref-portrait-image" src={site.portrait_url} alt={site.name} fetchPriority="high" /></motion.div>
+          <motion.div className="ref-portrait-backdrop" style={reduce ? undefined : { filter: blur, opacity: portraitOpacity }}><img className="ref-portrait-image" src={portraitUrl} alt={site.name} fetchPriority="high" decoding="async" /></motion.div>
           <div className="ref-hero-center"><div className="ref-hero-badges"><div className="ref-glass ref-project-badge"><span className="ref-stat-glass" data-morph="stat-bg-0" /><strong data-morph="stat-icon-0" data-uniform="true">↗</strong><span data-morph="stat-text-0" data-uniform="true">{site.stats[1]?.value || content.projects.length}<br />Projects</span></div><div className="ref-glass ref-years-badge"><span className="ref-stat-glass" data-morph="stat-bg-1" /><strong data-morph="stat-icon-1" data-uniform="true"><StatValue value={site.stats[0]?.value || '4+'} /></strong><span data-morph="stat-text-1" data-uniform="true">Years of<br />experience</span></div></div><div className="ref-hero-pitch"><motion.p style={reduce ? undefined : { opacity: heroFade }}><span className="ref-hero-heading-line">Yes, I’m</span><span className="ref-hero-heading-line">Full Stack</span><span className="ref-hero-heading-line">Developer</span></motion.p><div><a className="ref-button ref-primary-cta" href={gmailComposeUrl(site.email)} target="_blank" rel="noopener noreferrer"><span className="ref-cta-bg" data-morph="cta-bg" data-end=".35" /><span className="ref-cta-label" data-morph="cta-label" data-end=".35" data-uniform="true"><RollingLabel>Let’s talk</RollingLabel></span></a><motion.a style={reduce ? undefined : { opacity: heroFade }} className="ref-button" href="#about"><RollingLabel>About me</RollingLabel></motion.a></div></div><motion.ul style={reduce ? undefined : { opacity: heroFade }} className="ref-glass ref-traits">{['Problem solver', 'Team player', 'Clean code', 'Product-focused', 'Curious'].map((trait, i) => <li key={trait}><span aria-hidden="true"><ReferenceIcon name={['Problem Solver', 'reliable', 'strategist', 'builder', 'efficient'][i]} /></span>{trait}</li>)}</motion.ul></div>
           </div>
         </section>
@@ -112,8 +119,8 @@ export function ReferencePortfolio({ content }: { content: PortfolioContent }) {
         <SelectedWork projects={content.projects} />
         <section className="ref-section ref-benefits" id="benefits"><Benefits /></section>
         <SkillsSection groups={content.skillGroups} />
-        <section className="ref-section ref-contact" id="contact"><div className="ref-contact-content"><h2><Lines>{"Let’s Build\nSomething Useful"}</Lines></h2><p>Open to full-time, part-time, remote or hybrid roles. I enjoy working on products end to end, from the Backend to Frontend.</p><div className="ref-contact-person"><span className="ref-contact-avatar"><img src={site.portrait_url} alt={site.name} /></span><Chat email={site.email} /></div></div></section>
-        <section className="ref-section ref-credentials" id="credentials"><div className="ref-section-heading"><span className="ref-eyebrow">Education & certifications</span><h2><Lines>{"The Learning\nBehind the Work"}</Lines></h2></div><CredentialCarousel count={content.certifications.length}>{content.certifications.map((cert, i) => <Reveal className="ref-panel ref-credential" key={cert.title} delay={i * 20}><span className="ref-square">↗</span><h3>{cert.title}</h3><p>{cert.issuer}</p><div className="ref-credential-image"><img draggable={false} src={cert.image} alt={`${cert.title} certificate`} loading="lazy" /></div><div className="ref-credential-meta"><span>{cert.date}</span>{cert.url && <a href={cert.url} target="_blank" rel="noreferrer">View credential ↗</a>}</div></Reveal>)}</CredentialCarousel></section>
+        <section className="ref-section ref-contact" id="contact"><div className="ref-contact-content"><h2><Lines>{"Let’s Build\nSomething Useful"}</Lines></h2><p>Open to full-time, part-time, remote or hybrid roles. I enjoy working on products end to end, from the Backend to Frontend.</p><div className="ref-contact-person"><span className="ref-contact-avatar"><img src={portraitUrl} alt={site.name} loading="lazy" decoding="async" /></span><Chat email={site.email} /></div></div></section>
+        <section className="ref-section ref-credentials" id="credentials"><div className="ref-section-heading"><span className="ref-eyebrow">Education & certifications</span><h2><Lines>{"The Learning\nBehind the Work"}</Lines></h2></div><CredentialCarousel count={content.certifications.length}>{content.certifications.map((cert, i) => <Reveal className="ref-panel ref-credential" key={cert.title} delay={i * 20}><span className="ref-square">↗</span><h3>{cert.title}</h3><p>{cert.issuer}</p><div className="ref-credential-image"><img draggable={false} src={cert.image} alt={`${cert.title} certificate`} loading="lazy" decoding="async" /></div><div className="ref-credential-meta"><span>{cert.date}</span>{cert.url && <a href={cert.url} target="_blank" rel="noreferrer">View credential ↗</a>}</div></Reveal>)}</CredentialCarousel></section>
         <div className="ref-bottom-wordmark" aria-hidden="true"><svg viewBox="0 0 1000 300"><text x="0" y="270" textLength="1000" lengthAdjust="spacingAndGlyphs">{brand.toUpperCase()}</text></svg></div>
         {questions.length > 0 && <section className="ref-section ref-faq" id="faq"><div className="ref-section-heading"><span className="ref-eyebrow">FAQ</span><h2><Lines>{"Got any\nquestions?"}</Lines></h2></div><FAQGroup questions={questions} /></section>}
       </main>

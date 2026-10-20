@@ -44,14 +44,18 @@ export function Year({ year }: { year: string }) {
 function useSectionProgress(ref: React.RefObject<HTMLElement | null>, start: number, end: number, includeHeight = false) {
   const progress = useMotionValue(0)
   useEffect(() => {
+    let frame = 0
     const update = () => {
       if (!ref.current) return
       const rect = ref.current.getBoundingClientRect()
       const distance = window.innerHeight * (start - end) + (includeHeight ? rect.height : 0)
       progress.set(Math.max(0, Math.min(1, (window.innerHeight * start - rect.top) / distance)))
     }
-    update(); window.addEventListener('scroll', update, { passive: true }); window.addEventListener('resize', update)
-    return () => { window.removeEventListener('scroll', update); window.removeEventListener('resize', update) }
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; update() })
+    }
+    update(); window.addEventListener('scroll', schedule, { passive: true }); window.addEventListener('resize', schedule)
+    return () => { cancelAnimationFrame(frame); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule) }
   }, [ref, start, end, includeHeight, progress])
   return progress
 }
@@ -105,6 +109,9 @@ export function TimelinePath() {
     const length = path.getTotalLength()
     if (!length) return
     let frame = 0
+    // Cache coarse curve samples once; refine only the relevant segment on scroll.
+    const samples = Array.from({ length: 257 }, (_, index) => path.getPointAtLength(length * index / 256).y)
+    let previousReadingY = -1
     let previousActive = -2
     let previousReduced: boolean | null = null
     const motionPreference = matchMedia('(prefers-reduced-motion: reduce)')
@@ -112,10 +119,18 @@ export function TimelinePath() {
       const reduced = motionPreference.matches
       const bounds = timeline.getBoundingClientRect()
       const readingY = Math.max(0, Math.min(geometry.height, window.innerHeight * .62 - bounds.top))
-      // Find the point at the reading position along the curve, rather than
-      // assuming that distance along its bends is linear with page scroll.
-      let low = 0, high = length
-      for (let step = 0; step < 14; step += 1) {
+      // Offscreen scrolling leaves this animation at the same endpoint.
+      if (readingY === previousReadingY && reduced === previousReduced) return
+      previousReadingY = readingY
+      let first = 0, last = 256
+      while (last - first > 1) {
+        const middle = (first + last) >>> 1
+        if (samples[middle] < readingY) first = middle
+        else last = middle
+      }
+      let low = length * first / 256, high = length * last / 256
+      // Same precision as the original fourteen-step search over the full curve.
+      for (let step = 0; step < 6; step += 1) {
         const middle = (low + high) / 2
         if (path.getPointAtLength(middle).y < readingY) low = middle
         else high = middle
@@ -322,6 +337,7 @@ export function CredentialCarousel({ children, count }: { children: ReactNode; c
       drag.current = { x: event.clientX, left: event.currentTarget.scrollLeft, index: nearest(event.currentTarget), time: performance.now(), moved: false }
     }}
     onPointerMove={event => {
+      if (event.pointerType !== 'mouse') return
       const bounds = event.currentTarget.parentElement!.getBoundingClientRect()
       cursorX.set(event.clientX - bounds.left); cursorY.set(event.clientY - bounds.top)
       const start = drag.current

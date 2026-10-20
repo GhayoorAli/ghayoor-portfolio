@@ -111,3 +111,7 @@ export type PortfolioContent = {
   certifications: CertificationItem[]
   workflow: WorkflowItem[]
 }
+
+/** Only fields actually displayed on the landing page cross the client boundary. */
+export type LandingProject = Pick<Project, 'slug' | 'name' | 'hook' | 'cover' | 'stack'>
+export type HomeContent = Omit<PortfolioContent, 'projects' | 'workflow'> & { projects: LandingProject[] }
