@@ -1,0 +1,117 @@
+/* Native touch layouts share the desktop typography, palette and image sources. */
+@media (max-width: 900px), (pointer: coarse) {
+  .ref-section { scroll-margin-top: 104px; }
+  .ref-sidebar.is-expanded .ref-nav,
+  .ref-case-sidebar.is-expanded .ref-nav {
+    max-height: calc(100svh - 112px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .ref-social-icons a, .ref-menu-toggle { min-width: 44px; min-height: 44px; }
+  .ref-sidebar.is-expanded .ref-nav a,
+  .ref-case-sidebar.is-expanded .ref-nav a { min-height: 44px; }
+  .ref-work:not(.is-pinned) .ref-work-sticky {
+    position: relative;
+    min-height: 0;
+    padding: 72px 0 36px;
+  }
+  .ref-work:not(.is-pinned) .ref-work-heading {
+    display: block;
+    padding: 0 20px;
+    margin-bottom: 36px;
+  }
+  .ref-work:not(.is-pinned) .ref-work-heading > p {
+    max-width: 36rem;
+    margin-top: 24px;
+  }
+  .ref-work:not(.is-pinned) .ref-project-window {
+    padding: 0 20px;
+    scroll-padding-inline: 20px;
+    scroll-snap-type: x proximity;
+    touch-action: pan-x pan-y;
+  }
+  .ref-work:not(.is-pinned) .ref-project-shell {
+    width: min(80vw, 420px);
+    flex: 0 0 min(80vw, 420px);
+    scroll-snap-align: start;
+  }
+  .ref-work:not(.is-pinned) .ref-work-hint { display: block; margin: 24px 20px 0; }
+  .ref-carousel-dots button { position: relative; min-height: 24px; background: none; }
+  .ref-carousel-dots button::before {
+    content: '';
+    position: absolute;
+    inset: 9px 0;
+    border-radius: inherit;
+    background: #aaa78e;
+  }
+  .ref-carousel-dots button.is-active::before { background: var(--ref-accent); }
+}
+@media (max-width: 900px), (pointer: coarse) {
+  /* Keep the photo in its hero. A fixed, filtered full-screen layer repaints
+     beneath every section on touch devices and breaks on short viewports. */
+  .ref-portrait-backdrop { position: absolute; }
+  .ref-portrait-backdrop img { height: 100%; bottom: 0; width: 100%; }
+  .reference-portfolio::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 55% 60%, #b5ad9f55, transparent 70%);
+  }
+  .ref-hero-nav { top: 30%; }
+  .ref-hero-nav a { min-height: 44px; display: flex; align-items: center; }
+  .ref-hero-pitch .ref-button { min-height: 44px; }
+  .ref-credential-grid > .ref-credential { border-radius: 12px; }
+  .ref-project { border-radius: 12px; }
+  .ref-case-study .ref-case-main,
+  .ref-case-study .case-hero-copy,
+  .ref-case-study .case-project-facts,
+  .ref-case-study .case-project-facts > div { min-width: 0; }
+  .ref-case-study .case-hero-layout { grid-template-columns: minmax(0, 1fr); }
+  .ref-case-study .ref-case-hero h1 { overflow-wrap: anywhere; }
+  .ref-case-study .ref-case-actions { max-width: 100%; }
+  .ref-case-study .ref-case-tags { flex-wrap: wrap; }
+  .ref-case-study .ref-case-sidebar .ref-nav a:first-child,
+  .ref-case-study .ref-case-sidebar .ref-nav a:last-child { margin-block: 0; }
+}
+@media (max-width: 580px) {
+  .ref-hero { min-height: 780px; }
+  .ref-hero-center { display: block; width: 54vw; max-width: 54vw; bottom: 24px; }
+  .ref-hero-pitch, .ref-hero-pitch p { width: 54vw; max-width: 54vw; }
+  .ref-hero-pitch p { font-size: clamp(27px, 8.3vw, 38px); }
+  .ref-hero-heading-line { white-space: nowrap; }
+  .ref-hero-pitch > div { flex-wrap: wrap; gap: 8px; }
+  .ref-hero-pitch .ref-button { font-size: 12px; padding: 10px; }
+  .ref-hero-badges { position: absolute; top: 0; left: auto; right: calc(100% + 4px); width: 21vw; }
+  .ref-traits { position: absolute; top: 0; left: calc(100% + 4px); width: 21vw; padding: 10px 7px; max-width: 21vw; }
+  .ref-traits li { gap: 4px; }
+  .ref-traits span { flex-shrink: 0; }
+  .ref-project-tags { flex-wrap: wrap; }
+  .ref-project-copy h3 { overflow-wrap: anywhere; }
+  .ref-milestone-meta { gap: 12px; flex-wrap: wrap; }
+  .ref-read-more { min-height: 44px; padding: 10px 14px; }
+  .ref-benefits h2 { font-size: clamp(64px, 19vw, 100px); }
+  .ref-benefits { min-height: 0; padding-block: 72px; gap: 28px; }
+  .ref-faq-item > button { min-height: 56px; gap: 16px; text-align: left; }
+  .ref-faq-item > button > span { flex-shrink: 0; }
+  .ref-footer { gap: 16px; }
+  .ref-footer a { min-height: 44px; display: inline-flex; align-items: center; overflow-wrap: anywhere; }
+}
+@media (max-width: 900px) and (max-height: 500px), (pointer: coarse) and (max-height: 500px) {
+  .ref-wordmark { top: 104px; }
+  .ref-hero-nav { display: none; }
+}
+@media (pointer: coarse) and (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+@media (max-width: 580px) and (max-height: 700px) {
+  .ref-hero { height: 100svh; min-height: 100svh; }
+  .ref-wordmark { top: 104px; }
+  .ref-hero-nav { display: none; }
+  .ref-portrait-backdrop img { height: 65%; }
+  .ref-hero-center { bottom: 20px; }
+}

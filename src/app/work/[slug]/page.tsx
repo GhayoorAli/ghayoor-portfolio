@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { ProjectMarkdown } from '@/components/ProjectMarkdown'
 import { ProjectDetail } from '@/components/ProjectDetail'
 import { ProjectPageClient } from '@/components/ProjectPageClient'
 import { getPortfolioContent } from '@/lib/content'
@@ -23,9 +24,12 @@ export default async function WorkProjectPage({
   const index = content.projects.findIndex(item => item.slug === project.slug)
   const nextProject = content.projects.length > 1 ? content.projects[(index + 1) % content.projects.length] : undefined
 
+  const { readme, ...projectContent } = project
+  const nextPreview = nextProject ? { slug: nextProject.slug, name: nextProject.name, tag: nextProject.tag, cover: nextProject.cover } : undefined
+
   return (
     <ProjectPageClient>
-      <ProjectDetail project={project} projects={content.projects.map(({ slug, name }) => ({ slug, name }))} site={content.site} socials={content.socials} nextProject={nextProject} />
+      <ProjectDetail project={projectContent} readmeContent={readme?.trim() ? <ProjectMarkdown value={readme} repository={project.links.github} /> : undefined} projects={content.projects.map(({ slug, name }) => ({ slug, name }))} site={content.site} socials={content.socials} nextProject={nextPreview} />
     </ProjectPageClient>
   )
 }

@@ -99,7 +99,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
               else if (info.offset.x > 64 || info.velocity.x > 400) paginate(-1)
             }}
           >
-            <img draggable={false} style={{ maxWidth: imageSize.width ? `min(100%, ${imageSize.width}px)` : '100%' }} src={images[index]} ref={imageRef} alt={`${projectName} screenshot ${index + 1} of ${images.length}`} />
+            <img loading="lazy" decoding="async" draggable={false} style={{ maxWidth: imageSize.width ? `min(100%, ${imageSize.width}px)` : '100%' }} src={images[index]} ref={imageRef} alt={`${projectName} screenshot ${index + 1} of ${images.length}`} />
           </motion.figure>
         </AnimatePresence>
 
@@ -157,7 +157,7 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
               aria-label={`View screenshot ${i + 1}`}
               aria-pressed={i === index}
             >
-              <img src={src} alt="" loading="lazy" /><span>{String(i + 1).padStart(2, '0')}</span>
+              <img src={src} alt="" loading="lazy" decoding="async" /><span>{String(i + 1).padStart(2, '0')}</span>
             </button>
           ))}
         </div>

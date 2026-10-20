@@ -20,7 +20,7 @@ export function SelectedWork({ projects }: { projects: HomeContent['projects'] }
   useEffect(() => {
     const section = sectionRef.current, windowEl = windowRef.current, track = trackRef.current
     if (!section || !windowEl || !track) return
-    const media = matchMedia('(min-width: 768px)')
+    const media = matchMedia('(min-width: 901px) and (hover: hover) and (pointer: fine)')
     let travel = 0, enabled = false, frame = 0, cancelled = false
     const seen = new Set<number>()
     const cards = Array.from(track.children) as HTMLElement[]

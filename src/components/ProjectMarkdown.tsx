@@ -1,5 +1,3 @@
-'use client'
-
 import { Children, isValidElement, type ReactNode } from 'react'
 import Markdown, { defaultUrlTransform } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -36,7 +34,7 @@ export function ProjectMarkdown({ value, repository }: { value: string; reposito
         },
         table({ children }) { return <div className="project-markdown-table"><table>{children}</table></div> },
         a({ href, children, node: _node, ...props }) { return <a {...props} href={href} target={href?.startsWith('#') ? undefined : '_blank'} rel="noopener noreferrer">{children}</a> },
-        img({ src, alt, node: _node, ...props }) { return <img {...props} src={src} alt={alt ?? ''} loading="lazy" /> },
+        img({ src, alt, node: _node, ...props }) { return <img {...props} src={src} alt={alt ?? ''} loading="lazy" decoding="async" /> },
       }}
     >{value}</Markdown>
   </div>

@@ -92,10 +92,18 @@ export function MermaidDiagram({ chart, title }: MermaidDiagramProps) {
       }
     }
 
-    void run()
+    // Diagram code and rendering are expensive on phones. Start near the viewport.
+    const node = containerRef.current
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return
+      observer.disconnect()
+      void run()
+    }, { rootMargin: '300px' })
+    if (node) observer.observe(node)
 
     return () => {
       cancelled = true
+      observer.disconnect()
       // Remove any leftover mermaid error/helper nodes from this attempt.
       document.getElementById(renderId)?.remove()
       document.getElementById(`d${renderId}`)?.remove()

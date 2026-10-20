@@ -1,10 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { gmailComposeUrl } from '@/lib/contact'
 import type { Project, SiteSettings, SocialLink } from '@/types/content'
-import { ProjectMarkdown } from './ProjectMarkdown'
 import { MermaidDiagram } from './MermaidDiagram'
 import { ProjectGallery } from './ProjectGallery'
 import { TechIcon } from './TechIcon'
@@ -22,13 +21,13 @@ function featureCopy(feature: string) {
   return { title: '', text: feature }
 }
 
-export function ProjectDetail({ project, projects, site, socials, nextProject }: { project: Project; projects: Pick<Project, 'slug' | 'name'>[]; site: SiteSettings; socials: SocialLink[]; nextProject?: Project }) {
+export function ProjectDetail({ project, projects, site, socials, nextProject, readmeContent }: { project: Omit<Project, 'readme'>; projects: Pick<Project, 'slug' | 'name'>[]; site: SiteSettings; socials: SocialLink[]; nextProject?: Pick<Project, 'slug' | 'name' | 'tag' | 'cover'>; readmeContent?: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const navRef = useRef<HTMLElement>(null)
   const coverRef = useRef<HTMLImageElement>(null)
   const coverSize = useImageResolution(project.cover, coverRef)
   const brand = site.name.split(' ').find(word => word.toLowerCase() === 'ghayoor') || site.name.split(' ')[0]
-  const hasReadme = Boolean(project.readme?.trim())
+  const hasReadme = Boolean(readmeContent)
   const sections = hasReadme ? [['overview', 'Project story'], ...(project.gallery.length ? [['screenshots', 'Gallery']] : [])] : [['overview', 'Overview'], ...(project.features.length ? [['features', 'Capabilities']] : []), ...(project.architecture || project.workflow ? [['architecture', 'Architecture']] : []), ...(project.challenges.length ? [['challenges', 'Decisions']] : []), ...(project.gallery.length ? [['screenshots', 'Gallery']] : []), ...(project.results ? [['results', 'Outcome']] : [])]
 
   const chapter = (id: string) => String(sections.findIndex(section => section[0] === id) + 1).padStart(2, '0')
@@ -60,8 +59,8 @@ export function ProjectDetail({ project, projects, site, socials, nextProject }:
       <header className="ref-case-hero">
         <div className="case-hero-layout"><div className="case-hero-copy"><span className="case-project-label"><i />{project.tag}</span><h1>{project.name}</h1><p className="case-hero-description">{project.hook}</p><div className="ref-case-actions">{project.links.live && <a className="ref-button" href={project.links.live} target="_blank" rel="noreferrer"><RollingLabel>Explore live project</RollingLabel><span>↗</span></a>}{project.links.github && <a className="ref-button ref-case-secondary" href={project.links.github} target="_blank" rel="noreferrer"><ReferenceIcon name="github" /><RollingLabel>View source</RollingLabel></a>}</div></div><div className="case-project-facts"><div><span className="case-chapter">Project year</span><strong>{project.year}</strong></div><div><span className="case-chapter">Focus</span><strong>{project.tag}</strong></div><div><span className="case-chapter">Core technologies</span><div className="ref-case-tags">{project.stack.slice(0, 4).map(item => <span key={item.id}><TechIcon id={item.id} title={item.name} src={item.icon_url} />{item.name}</span>)}</div></div></div></div>
       </header>
-      <figure className="ref-case-cover"><div className="case-preview-grid" aria-hidden="true" /><div className="ref-case-screen" style={{ maxWidth: coverSize.width }}><div className="ref-case-browser"><span><i /><i /><i /></span><span>{project.name}</span><a href={project.cover} target="_blank" rel="noopener noreferrer" aria-label={`View full-size ${project.name} preview`}>↗</a></div><img src={project.cover} alt={`${project.name} project preview`} fetchPriority="high" ref={coverRef} /></div><figcaption><span>01 / Project preview</span><a href={project.gallery.length ? '#screenshots' : '#overview'}>{project.gallery.length ? 'Explore the interface ↓' : 'Project overview ↓'}</a></figcaption></figure>
-      {hasReadme ? <section id="overview" className="ref-case-section ref-case-readme"><ProjectMarkdown value={project.readme!} repository={project.links.github} /></section> : <>
+      <figure className="ref-case-cover"><div className="case-preview-grid" aria-hidden="true" /><div className="ref-case-screen" style={{ maxWidth: coverSize.width }}><div className="ref-case-browser"><span><i /><i /><i /></span><span>{project.name}</span><a href={project.cover} target="_blank" rel="noopener noreferrer" aria-label={`View full-size ${project.name} preview`}>↗</a></div><img src={project.cover} alt={`${project.name} project preview`} fetchPriority="high" decoding="async" ref={coverRef} /></div><figcaption><span>01 / Project preview</span><a href={project.gallery.length ? '#screenshots' : '#overview'}>{project.gallery.length ? 'Explore the interface ↓' : 'Project overview ↓'}</a></figcaption></figure>
+      {hasReadme ? <section id="overview" className="ref-case-section ref-case-readme">{readmeContent}</section> : <>
       <section id="overview" className="ref-case-section"><SectionTitle number={chapter('overview')} label="Overview" title="Behind the build." /><div className="ref-case-overview">{project.problem && <article><span className="case-chapter">The starting point</span><h3>The problem</h3><p>{project.problem}</p></article>}{project.role && <article><span className="case-chapter">My contribution</span><h3>My role</h3><p>{project.role}</p></article>}{project.stack.length > 0 && <article className="case-stack-panel"><span className="case-chapter">Tools & technologies</span><h3>Built with</h3><ul className="ref-case-stack">{project.stack.map(item => <li key={item.id}><TechIcon id={item.id} title={item.name} src={item.icon_url} /><span>{item.name}</span></li>)}</ul></article>}</div></section>
       {project.features.length > 0 && <section id="features" className="ref-case-section ref-case-dark"><SectionTitle number={chapter('features')} label="Capabilities" title="Inside the product." /><div className="ref-case-features">{project.features.map((feature, i) => { const copy = featureCopy(feature); return <article key={feature}><div className="case-feature-top"><span>{String(i + 1).padStart(2, '0')}</span><ReferenceIcon name="skills" /></div>{copy.title && <h3>{copy.title}</h3>}<p>{copy.text}</p></article> })}</div></section>}
       {(project.architecture || project.workflow) && <section id="architecture" className="ref-case-section ref-case-diagrams"><SectionTitle number={chapter('architecture')} label="Architecture" title="How it fits together." /><div>{project.architecture && <article className="ref-panel"><header><span className="case-chapter">System design</span><h3>Architecture</h3></header><MermaidDiagram chart={project.architecture} title={`${project.name} architecture`} /></article>}{project.workflow && <article className="ref-panel"><header><span className="case-chapter">From action to outcome</span><h3>Product workflow</h3></header><MermaidDiagram chart={project.workflow} title={`${project.name} workflow`} /></article>}</div></section>}
@@ -69,7 +68,7 @@ export function ProjectDetail({ project, projects, site, socials, nextProject }:
       </>}
       {project.gallery.length > 0 && <section id="screenshots" className="ref-case-section ref-case-gallery"><SectionTitle number={chapter('screenshots')} label="Gallery" title="A closer look." /><ProjectGallery key={project.slug} images={project.gallery} projectName={project.name} /></section>}
       {!hasReadme && project.results && <section id="results" className="ref-case-section ref-case-results"><SectionTitle number={chapter('results')} label="Outcome" title="What the work delivered." /><p>{project.results}</p></section>}
-      {nextProject && <Link href={`/work/${nextProject.slug}`} className="case-next-project"><div className="case-next-copy"><span className="case-chapter">Keep exploring / Next project</span><h2>{nextProject.name}</h2><p>{nextProject.tag}</p><span className="case-next-cta">View case study <span aria-hidden="true">↗</span></span></div><div className="case-next-image"><img src={nextProject.cover} alt="" /></div></Link>}
+      {nextProject && <Link href={`/work/${nextProject.slug}`} className="case-next-project"><div className="case-next-copy"><span className="case-chapter">Keep exploring / Next project</span><h2>{nextProject.name}</h2><p>{nextProject.tag}</p><span className="case-next-cta">View case study <span aria-hidden="true">↗</span></span></div><div className="case-next-image"><img src={nextProject.cover} alt="" loading="lazy" decoding="async" /></div></Link>}
       <footer className="ref-case-footer"><span>© {new Date().getFullYear()} {site.name}</span></footer>
     </main>
   </div>

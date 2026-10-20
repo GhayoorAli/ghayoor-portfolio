@@ -1,11 +1,11 @@
 'use client'
 
 import { ReactLenis } from 'lenis/react'
-import { useReducedMotion } from 'framer-motion'
+import { useDesktopMotion } from './useDesktopMotion'
 import { useEffect, type ReactNode } from 'react'
 
 export function ProjectPageClient({ children }: { children: ReactNode }) {
-  const reduce = useReducedMotion()
+  const desktopMotion = useDesktopMotion()
 
   useEffect(() => {
     document.documentElement.classList.remove('no-js')
@@ -19,19 +19,17 @@ export function ProjectPageClient({ children }: { children: ReactNode }) {
     </>
   )
 
-  if (reduce) return body
-
   return (
     <ReactLenis
       root
       options={{
-        autoRaf: true,
+        autoRaf: desktopMotion,
         lerp: 0.14,
-        smoothWheel: true,
+        smoothWheel: desktopMotion,
         wheelMultiplier: 1,
         touchMultiplier: 1.15,
         syncTouch: false,
-        anchors: { offset: -88, duration: 1 },
+        anchors: desktopMotion ? { offset: -88, duration: 1 } : false,
       }}
     >
       {body}

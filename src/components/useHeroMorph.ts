@@ -36,7 +36,7 @@ export function useHeroMorph(root: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const page = root.current
     if (!page) return
-    const media = matchMedia('(min-width: 901px) and (prefers-reduced-motion: no-preference)')
+    const media = matchMedia('(min-width: 901px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)')
     let cancelled = false
     let frame = 0
     let pairs: { source: HTMLElement; target: HTMLElement; dx: number; dy: number; sx: number; sy: number; start: number; end: number }[] = []
